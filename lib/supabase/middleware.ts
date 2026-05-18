@@ -52,7 +52,14 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    const role = user.user_metadata?.role || "student";
+    // Fetch the role directly from the public.profiles table so it's always 100% accurate
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    const role = profile?.role || user.user_metadata?.role || "student";
 
     // 2. Base Dashboard Redirect: Redirect /dashboard to specific role dashboard
     if (pathname === "/dashboard" || pathname === "/dashboard/") {
@@ -74,7 +81,14 @@ export async function updateSession(request: NextRequest) {
 
   // 4. Guest Redirect: Redirect authenticated users away from auth pages (login/signup/forgot-password)
   if (pathname.startsWith("/auth") && user) {
-    const role = user.user_metadata?.role || "student";
+    // Fetch the role directly from public.profiles for guest redirection as well
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    const role = profile?.role || user.user_metadata?.role || "student";
     const url = request.nextUrl.clone();
     url.pathname = `/dashboard/${role}`;
     return NextResponse.redirect(url);
