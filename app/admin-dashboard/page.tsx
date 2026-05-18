@@ -7,7 +7,8 @@ import {
   FileSpreadsheet, Receipt, Bus, Home, Library, Bell, 
   Settings, Search, UserPlus, Lock, Mail, Loader2, 
   ArrowUpRight, ArrowDownRight, CheckCircle, ShieldAlert,
-  Plus, CalendarDays, ClipboardList, FileText, Check, Trash2, Edit
+  Plus, CalendarDays, ClipboardList, FileText, Check, Trash2, Edit,
+  Briefcase, Phone, BookOpenCheck, MapPin, GraduationCap as SchoolLogo
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -50,13 +51,32 @@ function AdminDashboardContent() {
 
   // Search & Filter States
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
 
-  // Account Provisioner States
+  // Base Account Provisioner States
   const [provName, setProvName] = useState("");
   const [provEmail, setProvEmail] = useState("");
   const [provPass, setProvPass] = useState("");
   const [provRole, setProvRole] = useState<"student" | "teacher" | "parent">("student");
+  
+  // Dynamic Role Specific States
+  // 1. Teacher Fields
+  const [dept, setDept] = useState("");
+  const [specialization, setSpecialization] = useState("");
+  const [qualification, setQualification] = useState("");
+  const [teacherPhone, setTeacherPhone] = useState("");
+  
+  // 2. Student Fields
+  const [classLevel, setClassLevel] = useState("Grade 10-A");
+  const [section, setSection] = useState("A");
+  const [parentId, setParentId] = useState("");
+  const [studentPhone, setStudentPhone] = useState("");
+  const [address, setAddress] = useState("");
+
+  // 3. Parent Fields
+  const [childId, setChildId] = useState("");
+  const [parentPhone, setParentPhone] = useState("");
+  const [occupation, setOccupation] = useState("");
+
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -97,55 +117,109 @@ function AdminDashboardContent() {
     { name: "Apr", Collected: 1140000, Pending: 230000 },
   ];
 
-  // User Provisioning Logic
+  // User Provisioning Logic - Connects directly to stateless backend API
   const handleProvisionUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!provName || !provEmail || !provPass) return;
+    if (!provName || !provEmail || !provPass) {
+      setErrorMsg("Full Name, Email, and Password are required fields.");
+      return;
+    }
 
     setSubmitting(true);
     setSuccessMsg(null);
     setErrorMsg(null);
 
+    // Build the request body with dynamic role fields
+    const requestBody: any = {
+      email: provEmail,
+      password: provPass,
+      fullName: provName,
+      role: provRole,
+    };
+
+    if (provRole === "teacher") {
+      requestBody.department = dept;
+      requestBody.specialization = specialization;
+      requestBody.qualification = qualification;
+      requestBody.phone = teacherPhone;
+    } else if (provRole === "student") {
+      requestBody.classLevel = classLevel;
+      requestBody.section = section;
+      requestBody.parentId = parentId;
+      requestBody.phone = studentPhone;
+      requestBody.address = address;
+    } else if (provRole === "parent") {
+      requestBody.childId = childId;
+      requestBody.phone = parentPhone;
+      requestBody.occupation = occupation;
+    }
+
     try {
       const res = await fetch("/api/admin/create-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: provEmail,
-          password: provPass,
-          fullName: provName,
-          role: provRole
-        })
+        body: JSON.stringify(requestBody)
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to provision account.");
+      if (!res.ok) throw new Error(data.error || "Failed to provision secure database account.");
 
-      setSuccessMsg(`🎉 Success! Account provisioned successfully for ${provName} as a ${provRole}.`);
+      setSuccessMsg(`🎉 Success! Supabase Auth login account has been created, and role-specific tables have been synchronized for ${provName}. User can login immediately!`);
       
-      // Update local lists dynamically
+      // Update local listing states for instant feedback
       if (provRole === "student") {
         setStudentsList(prev => [
           ...prev,
-          { id: `s_${Date.now()}`, name: provName, class: "Unassigned", attendance: "100%", feeStatus: "Pending", performance: "Good" }
+          { 
+            id: data.user?.id || `s_${Date.now()}`, 
+            name: provName, 
+            class: classLevel, 
+            attendance: "100%", 
+            feeStatus: "Pending", 
+            performance: "Good" 
+          }
         ]);
       } else if (provRole === "teacher") {
         setTeachersList(prev => [
           ...prev,
-          { id: `t_${Date.now()}`, name: provName, subject: "General Studies", email: provEmail, status: "Active" }
+          { 
+            id: data.user?.id || `t_${Date.now()}`, 
+            name: provName, 
+            subject: specialization || "General", 
+            email: provEmail, 
+            status: "Active" 
+          }
         ]);
       } else if (provRole === "parent") {
         setParentsList(prev => [
           ...prev,
-          { id: `p_${Date.now()}`, name: provName, email: provEmail, phone: "Not provided", childName: "Unassigned student" }
+          { 
+            id: data.user?.id || `p_${Date.now()}`, 
+            name: provName, 
+            email: provEmail, 
+            phone: parentPhone || "Not provided", 
+            childName: "Registered Child" 
+          }
         ]);
       }
 
+      // Reset Form Inputs
       setProvName("");
       setProvEmail("");
       setProvPass("");
+      setDept("");
+      setSpecialization("");
+      setQualification("");
+      setTeacherPhone("");
+      setParentId("");
+      setStudentPhone("");
+      setAddress("");
+      setChildId("");
+      setParentPhone("");
+      setOccupation("");
+
     } catch (err: any) {
-      setErrorMsg(err.message || "An unexpected error occurred.");
+      setErrorMsg(err.message || "An unexpected error occurred during user provisioning.");
     } finally {
       setSubmitting(false);
     }
@@ -493,24 +567,25 @@ function AdminDashboardContent() {
 
       {/* 5. Admissions / Provisioning Tab */}
       {activeTab === "admissions" && (
-        <div className="max-w-xl mx-auto bg-white border border-slate-200/80 p-8 rounded-2xl shadow-sm space-y-6">
+        <div className="max-w-2xl mx-auto bg-white border border-slate-200/80 p-8 rounded-2xl shadow-sm space-y-6">
           <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-[#7C3AED] border border-purple-100 mb-3">
               <UserPlus className="w-6 h-6" />
             </div>
             <h2 className="text-xl font-bold font-outfit text-slate-800">Academic Admissions & Account Provisioner</h2>
             <p className="text-xs text-slate-400 mt-1">
-              Provision high-security database accounts for Students, Teachers, and Parents.
+              Create a Supabase Auth login profile and synchronize corresponding database tables automatically.
             </p>
           </div>
 
+          {/* Alert messages */}
           <AnimatePresence mode="wait">
             {successMsg && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }} 
                 animate={{ opacity: 1, height: "auto" }} 
                 exit={{ opacity: 0, height: 0 }}
-                className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 text-xs font-medium"
+                className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 text-xs font-semibold leading-relaxed"
               >
                 {successMsg}
               </motion.div>
@@ -520,85 +595,315 @@ function AdminDashboardContent() {
                 initial={{ opacity: 0, height: 0 }} 
                 animate={{ opacity: 1, height: "auto" }} 
                 exit={{ opacity: 0, height: 0 }}
-                className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-medium"
+                className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-semibold leading-relaxed"
               >
                 {errorMsg}
               </motion.div>
             )}
           </AnimatePresence>
 
-          <form onSubmit={handleProvisionUser} className="space-y-4">
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">
-                Assigned Full Name
-              </label>
-              <div className="relative">
-                <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input 
-                  type="text" 
-                  required
-                  placeholder="e.g. Priyanjali Sah" 
-                  value={provName}
-                  onChange={(e) => setProvName(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#7C3AED]"
-                />
+          <form onSubmit={handleProvisionUser} className="space-y-5">
+            {/* Core credentials card */}
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100 space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono mb-2">
+                1. Authentication Credentials
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                    Assigned Full Name *
+                  </label>
+                  <div className="relative">
+                    <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="e.g. Priyanka Sah" 
+                      value={provName}
+                      onChange={(e) => setProvName(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                    Academic Email Address *
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input 
+                      type="email" 
+                      required
+                      placeholder="e.g. priyanka@readers.school" 
+                      value={provEmail}
+                      onChange={(e) => setProvEmail(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                  Security Password (Key) *
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input 
+                    type="password" 
+                    required
+                    placeholder="•••••••• (Min 6 characters)" 
+                    value={provPass}
+                    onChange={(e) => setProvPass(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                  Institutional User Role
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["student", "teacher", "parent"] as const).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setProvRole(r)}
+                      className={`py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider border cursor-pointer transition-all ${
+                        provRole === r 
+                          ? "bg-[#7C3AED] text-white border-[#7C3AED] shadow-sm" 
+                          : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">
-                Academic Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input 
-                  type="email" 
-                  required
-                  placeholder="e.g. priyanjali@readers.school" 
-                  value={provEmail}
-                  onChange={(e) => setProvEmail(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#7C3AED]"
-                />
-              </div>
-            </div>
+            {/* Dynamic Role Specific Custom Fields */}
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-100 space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono mb-2">
+                2. Role Specific Data (Table Synchronization)
+              </h3>
 
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">
-                Security Password (Key)
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input 
-                  type="password" 
-                  required
-                  placeholder="••••••••" 
-                  value={provPass}
-                  onChange={(e) => setProvPass(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#7C3AED]"
-                />
-              </div>
-            </div>
+              {/* A. Teacher Fields */}
+              {provRole === "teacher" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Department
+                      </label>
+                      <div className="relative">
+                        <Home className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Science Faculty" 
+                          value={dept}
+                          onChange={(e) => setDept(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                        />
+                      </div>
+                    </div>
 
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">
-                Institutional User Role
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {(["student", "teacher", "parent"] as const).map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => setProvRole(r)}
-                    className={`py-2 rounded-xl text-xs font-bold uppercase tracking-wider border cursor-pointer ${
-                      provRole === r 
-                        ? "bg-[#7C3AED] text-white border-[#7C3AED]" 
-                        : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    {r}
-                  </button>
-                ))}
-              </div>
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Specialization Subject
+                      </label>
+                      <div className="relative">
+                        <BookOpenCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input 
+                          type="text" 
+                          placeholder="e.g. AP Physics 3" 
+                          value={specialization}
+                          onChange={(e) => setSpecialization(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Qualification Level
+                      </label>
+                      <div className="relative">
+                        <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input 
+                          type="text" 
+                          placeholder="e.g. PhD in Quantum Mechanics" 
+                          value={qualification}
+                          onChange={(e) => setQualification(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Phone Number
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input 
+                          type="text" 
+                          placeholder="e.g. +977 98510xxxxx" 
+                          value={teacherPhone}
+                          onChange={(e) => setTeacherPhone(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* B. Student Fields */}
+              {provRole === "student" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Assigned Class Level
+                      </label>
+                      <select 
+                        value={classLevel}
+                        onChange={(e) => setClassLevel(e.target.value)}
+                        className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                      >
+                        <option value="Grade 10-A">Grade 10-A</option>
+                        <option value="Grade 10-B">Grade 10-B</option>
+                        <option value="Grade 9-A">Grade 9-A</option>
+                        <option value="Grade 9-B">Grade 9-B</option>
+                        <option value="Grade 8-A">Grade 8-A</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Class Section
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="e.g. A" 
+                        value={section}
+                        onChange={(e) => setSection(e.target.value)}
+                        className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Parent Guardian Reference
+                      </label>
+                      <select 
+                        value={parentId}
+                        onChange={(e) => setParentId(e.target.value)}
+                        className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                      >
+                        <option value="">Unassigned Guardian</option>
+                        <option value="p1">Lakhan Yadav (Guardian of Rahul Dev Yadav)</option>
+                        <option value="p2">Bikash Sah (Guardian of Anish Kumar Sah)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Contact Phone
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input 
+                          type="text" 
+                          placeholder="e.g. +977 98010xxxxx" 
+                          value={studentPhone}
+                          onChange={(e) => setStudentPhone(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                      Residential Address
+                    </label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input 
+                        type="text" 
+                        placeholder="e.g. Mid-Baneshwor, Kathmandu" 
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* C. Parent Fields */}
+              {provRole === "parent" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Linked Student Name / ID
+                      </label>
+                      <select 
+                        value={childId}
+                        onChange={(e) => setChildId(e.target.value)}
+                        className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                      >
+                        <option value="">Select Child</option>
+                        <option value="s3">Rahul Dev Yadav (Grade 10-A)</option>
+                        <option value="s1">Anish Kumar Sah (Grade 10-A)</option>
+                        <option value="s2">Rina Jaiswal (Grade 9-B)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Occupation / Profession
+                      </label>
+                      <div className="relative">
+                        <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input 
+                          type="text" 
+                          placeholder="e.g. Software Engineer" 
+                          value={occupation}
+                          onChange={(e) => setOccupation(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                      Mobile Phone Number
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input 
+                        type="text" 
+                        placeholder="e.g. +977 98510xxxxx" 
+                        value={parentPhone}
+                        onChange={(e) => setParentPhone(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <button
@@ -608,11 +913,11 @@ function AdminDashboardContent() {
             >
               {submitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Provisioning Credentials...
+                  <Loader2 className="w-4 h-4 animate-spin" /> Initializing Credentials & Syncing DB...
                 </>
               ) : (
                 <>
-                  <Plus className="w-4 h-4" /> Create Institutional Profile
+                  <Plus className="w-4 h-4" /> Provision Active Supabase Profile
                 </>
               )}
             </button>
