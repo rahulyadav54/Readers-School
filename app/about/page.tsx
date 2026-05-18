@@ -193,6 +193,56 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* Administration & Management Team */}
+        <section className="space-y-12 pt-8">
+          <div className="text-center space-y-4 max-w-2xl mx-auto">
+            <h3 className="text-3xl font-extrabold font-outfit text-slate-900">Administration & Management Team</h3>
+            <p className="text-slate-600 text-lg">
+              The operational backbone of The Readers School, ensuring smooth everyday coordination, support, and professional standards.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[
+              { 
+                name: "Sudeep Shrestha", 
+                role: "Co-ordinator", 
+                phone: "+977 9845856547", 
+                image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=400&auto=format&fit=crop" 
+              },
+              { 
+                name: "Shambhu Yadav", 
+                role: "Accountant", 
+                phone: "+977 9802933728", 
+                image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop" 
+              },
+              { 
+                name: "Amrita Thakur", 
+                role: "Receptionist", 
+                phone: "", 
+                image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop" 
+              }
+            ].map((member, idx) => (
+              <div key={idx} className="bg-slate-50 rounded-[24px] overflow-hidden border border-slate-100 group hover:-translate-y-2 transition-transform duration-300">
+                <div className="h-64 overflow-hidden">
+                  <img src={member.image} alt={member.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                </div>
+                <div className="p-6 text-center space-y-4">
+                  <div>
+                    <h5 className="font-bold text-lg font-outfit text-slate-900">{member.name}</h5>
+                    <p className="text-blue-600 font-medium text-sm mt-1 uppercase tracking-wider">{member.role}</p>
+                    {member.phone && <p className="text-slate-600 font-medium mt-1 text-sm">{member.phone}</p>}
+                  </div>
+                  <div className="flex justify-center gap-3 pt-2">
+                    <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-blue-600 hover:text-white transition-colors"><Mail className="w-3 h-3" /></button>
+                    <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-blue-600 hover:text-white transition-colors"><Globe className="w-3 h-3" /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Leadership Statements */}
         <section className="bg-blue-900 rounded-[40px] p-10 md:p-16 text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-full h-full bg-[url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=2938&auto=format&fit=crop')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
