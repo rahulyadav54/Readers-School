@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import AttendanceRegistry from "@/components/AttendanceRegistry";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, Legend, BarChart, Bar
 } from "recharts";
@@ -398,39 +399,7 @@ function ParentDashboardContent() {
 
       {/* Attendance Log Tab */}
       {activeTab === "attendance" && (
-        <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm space-y-6">
-          <div>
-            <h2 className="text-lg font-bold font-outfit text-slate-800">Child's Attendance Registry Log</h2>
-            <p className="text-xs text-slate-400">Physical presence verification log for {activeChild.profiles.full_name}</p>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Registry Status</th>
-                  <th className="py-3 px-4">Remarks & Activity</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {attendanceLogs.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-3.5 px-4 font-semibold text-slate-800">{row.date}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                        row.status === "Present" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
-                      }`}>
-                        {row.status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-500 font-medium">{row.remark}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <AttendanceRegistry />
       )}
 
       {/* Fee Invoices Tab */}

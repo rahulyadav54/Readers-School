@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import AttendanceRegistry from "@/components/AttendanceRegistry";
 
 const supabase = createClient();
 
@@ -323,8 +324,13 @@ function StudentDashboardContent() {
         </div>
       )}
 
+      {/* Attendance Management Tab */}
+      {activeTab === "attendance" && (
+        <AttendanceRegistry />
+      )}
+
       {/* Settings / Fallback tabs */}
-      {!["dashboard", "homework", "timetable"].includes(activeTab) && (
+      {!["dashboard", "homework", "timetable", "attendance"].includes(activeTab) && (
         <div className="bg-white border border-slate-200/80 p-8 rounded-2xl shadow-sm text-center max-w-md mx-auto space-y-4">
           <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-[#7C3AED] border border-purple-100 mx-auto">
             <Settings className="w-6 h-6" />

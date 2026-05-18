@@ -71,7 +71,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#F8FAFC] font-sans antialiased text-slate-800 relative overflow-hidden select-none">
+    <div className="min-h-screen lg:h-screen grid grid-cols-1 lg:grid-cols-12 bg-[#F8FAFC] font-sans antialiased text-slate-800 relative lg:overflow-hidden">
       
       {/* Dynamic blurred shape background for entire screen */}
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[#7C3AED]/5 blur-[120px] pointer-events-none" />

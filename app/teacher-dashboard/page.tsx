@@ -9,6 +9,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import AttendanceRegistry from "@/components/AttendanceRegistry";
 
 const supabase = createClient();
 
@@ -202,75 +203,7 @@ function TeacherDashboardContent() {
 
       {/* 2. Attendance Management Tab */}
       {activeTab === "attendance" && (
-        <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h2 className="text-lg font-bold font-outfit text-slate-800">Attendance Registry Console</h2>
-              <p className="text-xs text-slate-400">Class Grade 10-A Daily Attendance Checklist</p>
-            </div>
-            <span className="text-xs font-mono font-bold text-slate-400 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-lg">
-              Date: {new Date().toLocaleDateString("en-US", { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
-            </span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
-                  <th className="py-3 px-4">Student ID</th>
-                  <th className="py-3 px-4">Name</th>
-                  <th className="py-3 px-4">Cohort</th>
-                  <th className="py-3 px-4 text-right">Attendance Check</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {loading ? (
-                  <tr>
-                    <td colSpan={4} className="text-center py-6 text-slate-400 font-semibold">
-                      <Loader2 className="w-4 h-4 animate-spin mx-auto mr-1 inline-block" /> Loading student details...
-                    </td>
-                  </tr>
-                ) : students.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="text-center py-6 text-slate-400">No students found.</td>
-                  </tr>
-                ) : (
-                  students.map((student) => (
-                    <tr key={student.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="py-3.5 px-4 font-mono font-bold text-slate-400">{student.id.substring(0, 8)}...</td>
-                      <td className="py-3.5 px-4 font-semibold text-[#7C3AED]">{student.full_name}</td>
-                      <td className="py-3.5 px-4 text-slate-600">{student.grade_level}</td>
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="inline-flex gap-1.5">
-                          <button 
-                            onClick={() => handleMarkAttendance(student.id, "present")}
-                            className={`px-3 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
-                              student.status === "present" 
-                                ? "bg-emerald-50 text-emerald-600 border border-emerald-200" 
-                                : "bg-white text-slate-400 border border-slate-200 hover:bg-slate-50"
-                            }`}
-                          >
-                            Present
-                          </button>
-                          <button 
-                            onClick={() => handleMarkAttendance(student.id, "absent")}
-                            className={`px-3 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
-                              student.status === "absent" 
-                                ? "bg-rose-50 text-rose-600 border border-rose-200" 
-                                : "bg-white text-slate-400 border border-slate-200 hover:bg-slate-50"
-                            }`}
-                          >
-                            Absent
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <AttendanceRegistry />
       )}
 
       {/* 3. Assignment Uploads Tab */}

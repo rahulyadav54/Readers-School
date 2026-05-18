@@ -22,7 +22,8 @@ export async function POST(request: Request) {
       dob,
       address,
       // Parent specific fields
-      occupation
+      occupation,
+      relationship
     } = body;
 
     if (!email || !password || !fullName || !role) {
@@ -39,9 +40,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Create a STATELESS Supabase Client with persistSession: false
-    // This is absolutely critical so that signing up a user does NOT disrupt the admin's active cookie session!
-    const supabase = createClient(
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    let userId = "";
+    let signUpError: any = null;
+
+    // Create a stateless client to interact with the database tables
+    const dbClient = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
@@ -52,29 +56,79 @@ export async function POST(request: Request) {
       }
     );
 
-    // 2. Register user in Supabase Auth securely
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
-        data: {
+    // Check for duplicate parent phone number
+    if (role === "parent" && phone) {
+      const { data: existingParent } = await dbClient
+        .from("parents")
+        .select("id")
+        .eq("phone", phone)
+        .maybeSingle();
+
+      if (existingParent) {
+        return NextResponse.json(
+          { error: "A parent account with this phone number already exists." },
+          { status: 400 }
+        );
+      }
+    }
+
+    let supabaseAdmin: any = null;
+
+    if (serviceRoleKey) {
+      console.log("Using Supabase Service Role Key to provision user safely...");
+      supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey,
+        {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+          }
+        }
+      );
+
+      const { data: adminData, error: adminError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
           full_name: fullName,
           role: role,
+        }
+      });
+
+      if (adminError) {
+        signUpError = adminError;
+      } else {
+        userId = adminData.user!.id;
+      }
+    } else {
+      console.log("No Service Role Key detected. Falling back to anonymous signup...");
+      const { data: signUpData, error: clientError } = await dbClient.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
+          data: {
+            full_name: fullName,
+            role: role,
+          },
         },
-      },
-    });
+      });
+
+      if (clientError) {
+        signUpError = clientError;
+      } else {
+        userId = signUpData.user!.id;
+      }
+    }
 
     if (signUpError) {
       return NextResponse.json({ error: signUpError.message }, { status: 400 });
     }
 
-    const authUser = signUpData.user;
-    if (!authUser) {
-      return NextResponse.json({ error: "Failed to initialize Supabase Auth user record." }, { status: 500 });
-    }
-
-    const userId = authUser.id;
+    // Use superuser admin client if available to bypass RLS, otherwise fallback to anon client
+    const supabase = supabaseAdmin || dbClient;
 
     // 3. Self-healing DB Upsert for Profiles table
     const { error: profileError } = await supabase.from("profiles").upsert({
@@ -115,6 +169,24 @@ export async function POST(request: Request) {
       }
 
     } else if (role === "student") {
+      // Self-heal parent record if it's referenced but missing from parents table (e.g. from past failed migrations)
+      if (parentId) {
+        const { data: parentRecord } = await supabase
+          .from("parents")
+          .select("id")
+          .eq("id", parentId)
+          .maybeSingle();
+
+        if (!parentRecord) {
+          console.log(`Self-healing parent record for parent ID ${parentId}...`);
+          await supabase.from("parents").insert({
+            id: parentId,
+            phone: "Not provided",
+            relationship: "Guardian"
+          });
+        }
+      }
+
       // Find class ID if class name matches
       let classId: string | null = null;
       const combinedClassName = section ? `${classLevel}-${section}` : classLevel;
@@ -161,7 +233,7 @@ export async function POST(request: Request) {
       const baseParentPayload: any = {
         id: userId,
         phone: phone || "Not provided",
-        relationship: "Guardian"
+        relationship: relationship || "Guardian"
       };
 
       try {

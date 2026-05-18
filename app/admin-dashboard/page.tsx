@@ -17,6 +17,7 @@ import {
 } from "recharts";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import AttendanceRegistry from "@/components/AttendanceRegistry";
 
 // Supabase client instance
 const supabase = createClient();
@@ -61,6 +62,7 @@ function AdminDashboardContent() {
   // Search & Filter States
   const [searchQuery, setSearchQuery] = useState("");
   const [parentSearchQuery, setParentSearchQuery] = useState("");
+  const [admissionParentSearch, setAdmissionParentSearch] = useState("");
 
   // Base Account Provisioner States
   const [provName, setProvName] = useState("");
@@ -309,9 +311,12 @@ function AdminDashboardContent() {
     setEditEmail(profile.email);
     
     if (profile.role === "student") {
-      setEditPhone("");
-      setEditExtraField1(profile.students?.grade_level || "");
-      setEditExtraField2(profile.students?.enrollment_status || "active");
+      const studentDetails = Array.isArray(profile.students) ? (profile.students as any)[0] : profile.students;
+      setEditPhone(studentDetails?.phone || "");
+      setEditExtraField1(studentDetails?.grade_level || "");
+      setEditExtraField2(studentDetails?.enrollment_status || "active");
+      setEditExtraField3(studentDetails?.parent_id || "");
+      setEditExtraField4(studentDetails?.address || "");
     } else if (profile.role === "teacher") {
       setEditPhone("");
       setEditExtraField1(profile.teachers?.department || "");
@@ -346,13 +351,53 @@ function AdminDashboardContent() {
 
       // 2. Update role-specific table details
       if (editingUser.role === "student") {
-        const { error: studentError } = await supabase
+        // Self-heal parent record first if linked to prevent foreign key violations
+        if (editExtraField3) {
+          const { data: parentRecord } = await supabase
+            .from("parents")
+            .select("id")
+            .eq("id", editExtraField3)
+            .maybeSingle();
+
+          if (!parentRecord) {
+            console.log(`Self-healing parent record for parent ID ${editExtraField3}...`);
+            await supabase.from("parents").insert({
+              id: editExtraField3,
+              phone: "Not provided",
+              relationship: "Guardian"
+            });
+          }
+        }
+
+        // Self-heal student record if missing in students table:
+        const { data: studentRow } = await supabase
           .from("students")
-          .update({
-            grade_level: editExtraField1,
-            enrollment_status: editExtraField2
-          })
-          .eq("id", editingUser.id);
+          .select("id")
+          .eq("id", editingUser.id)
+          .maybeSingle();
+
+        const studentPayload = {
+          grade_level: editExtraField1,
+          enrollment_status: editExtraField2,
+          parent_id: editExtraField3 || null,
+          phone: editPhone || null,
+          address: editExtraField4 || null
+        };
+
+        let studentError;
+        if (!studentRow) {
+          const { error } = await supabase.from("students").insert({
+            id: editingUser.id,
+            ...studentPayload
+          });
+          studentError = error;
+        } else {
+          const { error } = await supabase
+            .from("students")
+            .update(studentPayload)
+            .eq("id", editingUser.id);
+          studentError = error;
+        }
         if (studentError) throw studentError;
       } else if (editingUser.role === "teacher") {
         const { error: teacherError } = await supabase
@@ -405,6 +450,11 @@ function AdminDashboardContent() {
   const filteredParents = parentsList.filter(parent => 
     parent.full_name.toLowerCase().includes(parentSearchQuery.toLowerCase()) ||
     parent.email.toLowerCase().includes(parentSearchQuery.toLowerCase())
+  );
+
+  const admissionsFilteredParents = parentsList.filter(parent => 
+    parent.full_name.toLowerCase().includes(admissionParentSearch.toLowerCase()) ||
+    parent.email.toLowerCase().includes(admissionParentSearch.toLowerCase())
   );
 
   return (
@@ -712,10 +762,11 @@ function AdminDashboardContent() {
           {/* Parents dynamic processing */}
           {(() => {
             const searchedParentsList = parentsList.filter(parent => {
+              const parentDetails = Array.isArray(parent.parents) ? (parent.parents as any)[0] : parent.parents;
               const matchesSearch = 
                 parent.full_name.toLowerCase().includes(parentSearchQuery.toLowerCase()) ||
                 parent.email.toLowerCase().includes(parentSearchQuery.toLowerCase());
-              const matchesRel = parentRelFilter === "All" || parent.parents?.relationship === parentRelFilter;
+              const matchesRel = parentRelFilter === "All" || parentDetails?.relationship === parentRelFilter;
               return matchesSearch && matchesRel;
             });
 
@@ -768,10 +819,14 @@ function AdminDashboardContent() {
                       </tr>
                     ) : (
                       searchedParentsList.map((parent) => {
-                        const linkedChildren = studentsList.filter(s => s.students?.parent_id === parent.id);
+                        const parentDetails = Array.isArray(parent.parents) ? (parent.parents as any)[0] : parent.parents;
+                        const linkedChildren = studentsList.filter(s => {
+                          const studentDetails = Array.isArray(s.students) ? (s.students as any)[0] : s.students;
+                          return studentDetails?.parent_id === parent.id;
+                        });
                         const relationshipColor = 
-                          parent.parents?.relationship === "Father" ? "bg-blue-50 text-blue-600 border-blue-100" :
-                          parent.parents?.relationship === "Mother" ? "bg-pink-50 text-pink-600 border-pink-100" :
+                          parentDetails?.relationship === "Father" ? "bg-blue-50 text-blue-600 border-blue-100" :
+                          parentDetails?.relationship === "Mother" ? "bg-pink-50 text-pink-600 border-pink-100" :
                           "bg-purple-50 text-purple-600 border-purple-100";
 
                         return (
@@ -779,10 +834,10 @@ function AdminDashboardContent() {
                             <td className="py-4 px-4 font-mono font-bold text-slate-400 select-all truncate max-w-[120px]">{parent.id}</td>
                             <td className="py-4 px-4 font-bold text-slate-800">{parent.full_name}</td>
                             <td className="py-4 px-4 text-slate-500 font-mono select-all">{parent.email}</td>
-                            <td className="py-4 px-4 text-slate-600 font-semibold">{parent.parents?.phone || "Not provided"}</td>
+                            <td className="py-4 px-4 text-slate-600 font-semibold">{parentDetails?.phone || "Not provided"}</td>
                             <td className="py-4 px-4">
                               <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${relationshipColor}`}>
-                                {parent.parents?.relationship || "Guardian"}
+                                {parentDetails?.relationship || "Guardian"}
                               </span>
                             </td>
                             <td className="py-4 px-4 text-center">
@@ -1083,8 +1138,8 @@ function AdminDashboardContent() {
                         <input 
                           type="text" 
                           placeholder="🔍 Search parent name or email..." 
-                          value={parentSearchQuery}
-                          onChange={(e) => setParentSearchQuery(e.target.value)}
+                          value={admissionParentSearch}
+                          onChange={(e) => setAdmissionParentSearch(e.target.value)}
                           className="w-full px-3 py-1.5 text-[10px] rounded-lg border border-slate-200 bg-white focus:outline-none"
                         />
                         <select 
@@ -1094,11 +1149,15 @@ function AdminDashboardContent() {
                           className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
                         >
                           <option value="">-- Choose Existing Parent --</option>
-                          {filteredParents.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.full_name} ({p.email}) - {p.parents?.relationship || "Guardian"}
-                            </option>
-                          ))}
+                          {admissionsFilteredParents.length === 0 ? (
+                            <option disabled value="">No parents found. Please provision a Parent account first!</option>
+                          ) : (
+                            admissionsFilteredParents.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.full_name} ({p.email}) - {p.parents?.relationship || "Guardian"}
+                              </option>
+                            ))
+                          )}
                         </select>
                       </div>
                     </div>
@@ -1213,8 +1272,13 @@ function AdminDashboardContent() {
         </div>
       )}
 
+      {/* Attendance Management Tab */}
+      {activeTab === "attendance" && (
+        <AttendanceRegistry />
+      )}
+
       {/* 6. Remaining tabs fallbacks */}
-      {!["dashboard", "students", "teachers", "parents", "admissions"].includes(activeTab) && (
+      {!["dashboard", "students", "teachers", "parents", "admissions", "attendance"].includes(activeTab) && (
         <div className="bg-white border border-slate-200/80 p-8 rounded-2xl shadow-sm text-center max-w-md mx-auto space-y-4">
           <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-[#7C3AED] border border-purple-100 mx-auto">
             <Settings className="w-6 h-6" />
@@ -1353,6 +1417,48 @@ function AdminDashboardContent() {
                         <option value="suspended">Suspended</option>
                         <option value="graduated">Graduated</option>
                       </select>
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Parent Guardian Link
+                      </label>
+                      <select 
+                        value={editExtraField3}
+                        onChange={(e) => setEditExtraField3(e.target.value)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
+                      >
+                        <option value="">-- Choose Parent --</option>
+                        {parentsList.map((p) => {
+                          const pDetails = Array.isArray(p.parents) ? (p.parents as any)[0] : p.parents;
+                          return (
+                            <option key={p.id} value={p.id}>
+                              {p.full_name} ({p.email}) - {pDetails?.relationship || "Guardian"}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Contact Phone
+                      </label>
+                      <input 
+                        type="text" 
+                        value={editPhone}
+                        onChange={(e) => setEditPhone(e.target.value)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Residential Address
+                      </label>
+                      <input 
+                        type="text" 
+                        value={editExtraField4}
+                        onChange={(e) => setEditExtraField4(e.target.value)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
+                      />
                     </div>
                   </>
                 )}
@@ -1585,32 +1691,37 @@ function AdminDashboardContent() {
               <div className="space-y-6">
                 
                 {/* Profile Grid */}
-                <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 text-xs">
-                  <div>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Full Name</p>
-                    <p className="font-bold text-slate-800 mt-0.5">{viewingParentDetail.full_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Relationship</p>
-                    <p className="font-bold text-[#7C3AED] mt-0.5">{viewingParentDetail.parents?.relationship || "Guardian"}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Email Address</p>
-                    <p className="font-medium text-slate-600 mt-0.5 font-mono select-all">{viewingParentDetail.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Phone Number</p>
-                    <p className="font-semibold text-slate-700 mt-0.5">{viewingParentDetail.parents?.phone || "Not provided"}</p>
-                  </div>
-                  <div>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Occupation</p>
-                    <p className="font-semibold text-slate-700 mt-0.5">{viewingParentDetail.parents?.occupation || "Not provided"}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Residential Address</p>
-                    <p className="font-semibold text-slate-600 mt-0.5">{viewingParentDetail.parents?.address || "Not provided"}</p>
-                  </div>
-                </div>
+                {(() => {
+                  const parentDetails = Array.isArray(viewingParentDetail.parents) ? (viewingParentDetail.parents as any)[0] : viewingParentDetail.parents;
+                  return (
+                    <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 text-xs">
+                      <div>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Full Name</p>
+                        <p className="font-bold text-slate-800 mt-0.5">{viewingParentDetail.full_name}</p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Relationship</p>
+                        <p className="font-bold text-[#7C3AED] mt-0.5">{parentDetails?.relationship || "Guardian"}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Email Address</p>
+                        <p className="font-medium text-slate-600 mt-0.5 font-mono select-all">{viewingParentDetail.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Phone Number</p>
+                        <p className="font-semibold text-slate-700 mt-0.5">{parentDetails?.phone || "Not provided"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Occupation</p>
+                        <p className="font-semibold text-slate-700 mt-0.5">{parentDetails?.occupation || "Not provided"}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Residential Address</p>
+                        <p className="font-semibold text-slate-600 mt-0.5">{parentDetails?.address || "Not provided"}</p>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Linked Children List */}
                 <div>
