@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  
+  --primary: #1e3a8a;
+  --secondary: #fbbf24;
+  --accent: #f43f5e;
+  
+  --mesh-1: #e0e7ff;
+  --mesh-2: #fef08a;
+  --mesh-3: #ffedd5;
+}
+
+.dark {
+  /* Internal dashboards can use dark mode, but public site defaults to light */
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  
+  --primary: #3b82f6;
+  --secondary: #fbbf24;
+  --accent: #fb7185;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* Premium Apple-style Cards */
+.premium-card {
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.04), 0 12px 48px -12px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+
+.premium-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.08), 0 24px 64px -12px rgba(15, 23, 42, 0.1);
+}
+
+/* Gradient Mesh Backgrounds */
+.bg-mesh-light {
+  background-color: #ffffff;
+  background-image: 
+    radial-gradient(at 10% 10%, var(--mesh-1) 0px, transparent 40%),
+    radial-gradient(at 90% 90%, var(--mesh-2) 0px, transparent 40%),
+    radial-gradient(at 50% 50%, var(--mesh-3) 0px, transparent 60%);
+  background-size: cover;
+  background-position: center;
+}
+
+/* Soft Curved Dividers */
+.curve-bottom {
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+}
+@media (min-width: 768px) {
+  .curve-bottom {
+    border-bottom-left-radius: 80px;
+    border-bottom-right-radius: 80px;
+  }
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Internal Dashboard specific (Futuristic) */
+.dashboard-glass {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
