@@ -117,11 +117,12 @@ export async function POST(request: Request) {
     } else if (role === "student") {
       // Find class ID if class name matches
       let classId: string | null = null;
-      if (classLevel) {
+      const combinedClassName = section ? `${classLevel}-${section}` : classLevel;
+      if (combinedClassName) {
         const { data: classData } = await supabase
           .from("classes")
           .select("id")
-          .eq("name", classLevel)
+          .eq("name", combinedClassName)
           .single();
         if (classData) {
           classId = classData.id;
@@ -132,7 +133,7 @@ export async function POST(request: Request) {
         id: userId,
         parent_id: parentId || null,
         class_id: classId,
-        grade_level: classLevel || "Grade 10",
+        grade_level: combinedClassName || "Grade 10",
         enrollment_status: "active",
         xp: 0,
         streak: 0

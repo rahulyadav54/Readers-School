@@ -74,7 +74,7 @@ function AdminDashboardContent() {
   const [teacherPhone, setTeacherPhone] = useState("");
   
   // 2. Student Fields
-  const [classLevel, setClassLevel] = useState("Grade 10-A");
+  const [classLevel, setClassLevel] = useState("Nursery");
   const [section, setSection] = useState("A");
   const [parentId, setParentId] = useState("");
   const [studentPhone, setStudentPhone] = useState("");
@@ -870,11 +870,19 @@ function AdminDashboardContent() {
                         onChange={(e) => setClassLevel(e.target.value)}
                         className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
                       >
-                        <option value="Grade 10-A">Grade 10-A</option>
-                        <option value="Grade 10-B">Grade 10-B</option>
-                        <option value="Grade 9-A">Grade 9-A</option>
-                        <option value="Grade 9-B">Grade 9-B</option>
-                        <option value="Grade 8-A">Grade 8-A</option>
+                        <option value="Nursery">Nursery</option>
+                        <option value="LKG">LKG</option>
+                        <option value="UKG">UKG</option>
+                        <option value="Grade 1">Grade 1</option>
+                        <option value="Grade 2">Grade 2</option>
+                        <option value="Grade 3">Grade 3</option>
+                        <option value="Grade 4">Grade 4</option>
+                        <option value="Grade 5">Grade 5</option>
+                        <option value="Grade 6">Grade 6</option>
+                        <option value="Grade 7">Grade 7</option>
+                        <option value="Grade 8">Grade 8</option>
+                        <option value="Grade 9">Grade 9</option>
+                        <option value="Grade 10">Grade 10</option>
                       </select>
                     </div>
 
@@ -882,13 +890,16 @@ function AdminDashboardContent() {
                       <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
                         Class Section
                       </label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. A" 
+                      <select 
                         value={section}
                         onChange={(e) => setSection(e.target.value)}
                         className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
-                      />
+                      >
+                        <option value="A">Section A</option>
+                        <option value="B">Section B</option>
+                        <option value="C">Section C</option>
+                        <option value="D">Section D</option>
+                      </select>
                     </div>
                   </div>
 
