@@ -10,12 +10,12 @@ export default function AdminDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] text-slate-800 overflow-hidden relative">
+    <div className="flex h-screen bg-[#F8FAFC] text-slate-800 overflow-hidden relative w-full">
       {/* Sidebar Navigation */}
       <Sidebar />
 
       {/* Primary Content Panel */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top Header Controls */}
         <Navbar />
 
@@ -24,7 +24,7 @@ export default function AdminDashboardLayout({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto relative z-10"
+          className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto relative z-10 custom-scrollbar"
         >
           <div className="max-w-7xl mx-auto w-full">
             {children}

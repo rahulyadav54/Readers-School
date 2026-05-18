@@ -8,7 +8,7 @@ import { useAuthStore } from "@/lib/store/authStore";
 import { Lock, Mail, ChevronLeft, AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { ShieldCheck, GraduationCap, BookOpen, Users, HelpCircle } from "lucide-react";
+import { ShieldCheck, GraduationCap, BookOpen, Users, GraduationCap as SchoolLogo } from "lucide-react";
 
 type PortalType = "admin" | "teacher" | "student" | "parent";
 
@@ -31,41 +31,41 @@ function LoginForm() {
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Portal Styling Configurations
+  // Portal Styling Configurations - Premium institutional colors
   const portalConfig = {
     admin: {
       title: "Administrator Gateway",
       desc: "Readers School Enterprise Control Panel",
-      color: "from-violet-500 to-purple-600",
-      accent: "text-purple-400 bg-purple-500/10 border-purple-500/25",
-      glow: "bg-purple-500/10",
+      color: "from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700",
+      accent: "text-purple-600 bg-purple-50 border-purple-200/60",
+      glow: "bg-purple-500/5",
       btnText: "Authenticate Admin console",
       emailPlaceholder: "admin@readersschool.com",
     },
     teacher: {
       title: "Faculty Terminal",
       desc: "Academic Curriculum & Grade Control Center",
-      color: "from-emerald-500 to-teal-600",
-      accent: "text-emerald-400 bg-emerald-500/10 border-emerald-500/25",
-      glow: "bg-emerald-500/10",
+      color: "from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700",
+      accent: "text-emerald-600 bg-emerald-50 border-emerald-200/60",
+      glow: "bg-emerald-500/5",
       btnText: "Log In to Faculty Console",
       emailPlaceholder: "teacher@readersschool.com",
     },
     student: {
       title: "Student Terminal",
       desc: "Access your coursework, grades, and study hub",
-      color: "from-indigo-500 to-blue-600",
-      accent: "text-indigo-400 bg-indigo-500/10 border-indigo-500/25",
-      glow: "bg-indigo-500/10",
+      color: "from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700",
+      accent: "text-indigo-600 bg-indigo-50 border-indigo-200/60",
+      glow: "bg-indigo-500/5",
       btnText: "Access Student Study Hub",
       emailPlaceholder: "student@readersschool.com",
     },
     parent: {
       title: "Guardian Portal",
       desc: "Readers School Family Connection Center",
-      color: "from-amber-500 to-orange-600",
-      accent: "text-amber-400 bg-amber-500/10 border-amber-500/25",
-      glow: "bg-amber-500/10",
+      color: "from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700",
+      accent: "text-amber-600 bg-amber-50 border-amber-200/60",
+      glow: "bg-amber-500/5",
       btnText: "Enter Parent Dashboard",
       emailPlaceholder: "parent@readersschool.com",
     },
@@ -104,22 +104,35 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden bg-background">
-      {/* Moving glass dynamic ambient backdrops */}
+    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 relative overflow-hidden bg-[#F8FAFC]">
+      {/* Sleek dynamic background decorations */}
       <div className={`absolute top-1/4 left-1/3 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full ${currentPortal.glow} blur-3xl pointer-events-none transition-all duration-700`} />
       <div className="absolute bottom-1/4 right-1/3 translate-x-1/2 translate-y-1/2 w-96 h-96 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none" />
 
       {/* Back button */}
       <Link
         href="/"
-        className="absolute top-8 left-8 flex items-center gap-2 text-foreground/60 hover:text-foreground transition-colors text-sm font-medium"
+        className="absolute top-6 left-6 flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors text-xs font-semibold"
       >
         <ChevronLeft className="w-4 h-4" />
         Back to Home
       </Link>
 
-      {/* Portal Selection Tabs */}
-      <div className="w-full max-w-md mb-6 glass-panel rounded-2xl p-1.5 flex gap-1 relative z-10 border border-foreground/5 shadow-lg">
+      {/* Main Logo & Portal Heading */}
+      <div className="flex flex-col items-center mb-6 relative z-10">
+        <div className="w-12 h-12 rounded-2xl bg-white shadow-md flex items-center justify-center text-[#7C3AED] border border-slate-200/60 mb-2">
+          <SchoolLogo className="w-6 h-6" />
+        </div>
+        <h1 className="text-lg font-black tracking-tight text-slate-800 font-outfit uppercase">
+          Readers School
+        </h1>
+        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+          Enterprise Portal Gateway
+        </p>
+      </div>
+
+      {/* Portal Selection Slider Tabs */}
+      <div className="w-full max-w-md mb-5 bg-white border border-slate-200/80 rounded-2xl p-1.5 flex gap-1 relative z-10 shadow-sm">
         {(["student", "teacher", "parent", "admin"] as PortalType[]).map((role) => {
           const isActive = activePortal === role;
           return (
@@ -131,8 +144,8 @@ function LoginForm() {
               }}
               className={`flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer relative ${
                 isActive 
-                  ? "text-foreground bg-foreground/[0.04] border-b border-indigo-500/50 shadow-sm" 
-                  : "text-foreground/55 hover:text-foreground hover:bg-foreground/5"
+                  ? "text-slate-800 bg-slate-50 border-b border-indigo-500 shadow-xs" 
+                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-50/60"
               }`}
             >
               <div className="flex flex-col items-center gap-1">
@@ -147,24 +160,25 @@ function LoginForm() {
         })}
       </div>
 
+      {/* Login Card Form */}
       <motion.div
         key={activePortal}
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="glass-panel w-full max-w-md rounded-3xl p-8 shadow-xl border border-foreground/5 relative z-10"
+        transition={{ duration: 0.3 }}
+        className="bg-white w-full max-w-md rounded-3xl p-8 shadow-md border border-slate-200/80 relative z-10"
       >
-        <div className="flex flex-col items-center text-center mb-8">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-500 ${currentPortal.accent} mb-4`}>
-            {activePortal === "admin" && <ShieldCheck className="w-6 h-6 animate-pulse" />}
-            {activePortal === "teacher" && <GraduationCap className="w-6 h-6 animate-bounce" />}
-            {activePortal === "student" && <BookOpen className="w-6 h-6 animate-pulse" />}
-            {activePortal === "parent" && <Users className="w-6 h-6" />}
+        <div className="flex flex-col items-center text-center mb-6">
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-300 ${currentPortal.accent} mb-3`}>
+            {activePortal === "admin" && <ShieldCheck className="w-5.5 h-5.5" />}
+            {activePortal === "teacher" && <GraduationCap className="w-5.5 h-5.5" />}
+            {activePortal === "student" && <BookOpen className="w-5.5 h-5.5" />}
+            {activePortal === "parent" && <Users className="w-5.5 h-5.5" />}
           </div>
-          <h2 className="text-2xl font-black font-outfit tracking-tight text-foreground transition-all duration-300">
+          <h2 className="text-xl font-bold font-outfit tracking-tight text-slate-800 transition-all duration-300">
             {currentPortal.title}
           </h2>
-          <p className="text-xs text-foreground/50 mt-1.5 transition-all duration-300">
+          <p className="text-xs text-slate-400 mt-1 transition-all duration-300">
             {currentPortal.desc}
           </p>
         </div>
@@ -175,15 +189,15 @@ function LoginForm() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-6 overflow-hidden"
+              className="mb-5 overflow-hidden"
             >
-              <div className="flex gap-2.5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-500 text-xs items-start leading-normal">
+              <div className="flex gap-2 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs items-start leading-normal">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <span>{errorMsg}</span>
                   {activePortal === "admin" && (
-                    <div className="text-[10px] text-rose-400 font-mono mt-1 border-t border-rose-500/10 pt-1">
-                      💡 Tip: Run SQL update in Supabase editor to set role='admin' for your email!
+                    <div className="text-[10px] text-rose-500 font-mono mt-1 border-t border-rose-200 pt-1">
+                      💡 Tip: Click "Elevate to Admin ERP" in navbar menu to instantly update roles!
                     </div>
                   )}
                 </div>
@@ -192,27 +206,27 @@ function LoginForm() {
           )}
         </AnimatePresence>
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-foreground/60 mb-2 font-mono">
+            <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 font-mono">
               Academic Email Address
             </label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/45" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="email"
                 required
                 placeholder={currentPortal.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="glass-input w-full pl-11 pr-4 py-3 rounded-2xl text-sm"
+                className="w-full pl-11 pr-4 py-2.5 rounded-xl text-xs border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#7C3AED] transition-all"
               />
             </div>
           </div>
 
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-foreground/60 font-mono">
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="block text-[9px] font-bold uppercase tracking-widest text-slate-400 font-mono">
                 Security Key
               </label>
               <a
@@ -221,25 +235,25 @@ function LoginForm() {
                   e.preventDefault();
                   alert("Please contact the Readers School IT Administration Desk for password assistance.");
                 }}
-                className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                className="text-[10px] font-bold text-indigo-500 hover:text-indigo-600 transition-colors"
               >
                 Forgot Password?
               </a>
             </div>
             <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/45" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type={showPassword ? "text" : "password"}
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="glass-input w-full pl-11 pr-11 py-3 rounded-2xl text-sm"
+                className="w-full pl-11 pr-11 py-2.5 rounded-xl text-xs border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-[#7C3AED] transition-all"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-foreground/45 hover:text-foreground/75 transition-colors p-1"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1 cursor-pointer"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -249,12 +263,12 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-4 rounded-2xl bg-gradient-to-r ${currentPortal.color} text-white font-bold shadow-lg transition-all flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 text-xs uppercase tracking-wider cursor-pointer`}
+            className={`w-full py-3 rounded-xl bg-gradient-to-r ${currentPortal.color} text-white font-bold transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 text-[10px] uppercase tracking-wider cursor-pointer shadow-md`}
           >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Verifying Security Clearances...
+                Verifying Credentials...
               </>
             ) : (
               currentPortal.btnText
@@ -262,11 +276,11 @@ function LoginForm() {
           </button>
         </form>
 
-        <div className="text-center mt-6 text-xs text-foreground/60">
+        <div className="text-center mt-6 text-xs text-slate-500">
           First time here?{" "}
           <Link
             href="/auth/signup"
-            className="text-indigo-400 hover:text-indigo-300 transition-colors font-semibold ml-1"
+            className="text-indigo-500 hover:text-indigo-600 transition-colors font-semibold ml-1"
           >
             Create an academic profile
           </Link>
@@ -279,7 +293,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-background relative">
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] relative">
         <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     }>
