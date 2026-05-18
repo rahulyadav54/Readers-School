@@ -3,10 +3,11 @@
 import { useTheme } from "next-themes";
 import { useUIStore } from "@/lib/store/uiStore";
 import { useAuth } from "@/hooks/useAuth";
-import { Sun, Moon, Bell, Search, Menu, LogOut, Sparkles } from "lucide-react";
+import { Sun, Moon, Bell, Search, Menu, LogOut, Sparkles, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -121,6 +122,27 @@ export default function Navbar() {
                       {userRole}
                     </span>
                   </div>
+
+                  <button
+                    onClick={async () => {
+                      if (!user) return;
+                      const supabase = createClient();
+                      const { error } = await supabase
+                        .from("profiles")
+                        .update({ role: "admin" })
+                        .eq("id", user.id);
+                      if (!error) {
+                        alert("🎉 Account successfully promoted to Admin! Redirecting...");
+                        window.location.href = "/dashboard/admin";
+                      } else {
+                        alert("Failed to elevate role: " + error.message);
+                      }
+                    }}
+                    className="w-full flex items-center gap-2 p-2 text-violet-500 hover:bg-violet-500/10 hover:text-violet-400 transition-colors rounded-lg text-xs font-medium text-left mb-1"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Elevate to Admin ERP
+                  </button>
 
                   <button
                     onClick={() => {
