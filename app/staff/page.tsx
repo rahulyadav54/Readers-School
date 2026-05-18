@@ -2,87 +2,103 @@
 
 import PublicHeader from "@/components/layout/PublicHeader";
 import PublicFooter from "@/components/layout/PublicFooter";
-import { useState } from "react";
-import { BookOpen, User, Mail, GraduationCap, Award, Compass } from "lucide-react";
+import { Mail, Linkedin } from "lucide-react";
 
 export default function StaffPage() {
-  const [selectedDept, setSelectedDept] = useState("All");
-
-  const departments = ["All", "Science", "Mathematics", "Computer Science", "Languages"];
-
-  const teachers = [
-    { name: "Dr. Clara Mercer", dept: "Science", role: "Science Department Head", qual: "Ph.D. in Physics (Stanford)", subjects: ["Quantum Theory", "Applied Thermodynamics"] },
-    { name: "Prof. Elena Rostova", dept: "Mathematics", role: "Senior Calculus Coach", qual: "M.Sc. in Mathematics (Moscow State)", subjects: ["Calculus", "Linear Vector Algebra"] },
-    { name: "Mr. Sarah Jenkins", dept: "Computer Science", role: "AI & TS Architect", qual: "B.Tech in Computer Science (IIT Madras)", subjects: ["Zustand State Models", "Gemini Node APIs"] },
-    { name: "Mrs. Linda Adams", dept: "Languages", role: "Senior Literature Mentor", qual: "M.A. in English Lit (Oxford)", subjects: ["Classical Poetry", "Phonetics"] }
+  const leadership = [
+    {
+      name: "Dr. Eleanor Vance",
+      role: "Principal & Head of School",
+      bio: "With over 20 years of experience in international education, Dr. Vance leads the school with a vision of academic excellence and emotional intelligence.",
+      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=60&w=600&auto=format&fit=crop"
+    },
+    {
+      name: "Marcus Chen",
+      role: "Vice Principal, Academics",
+      bio: "A former university professor, Marcus ensures our curriculum remains at the cutting edge of technological and global standards.",
+      image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=60&w=600&auto=format&fit=crop"
+    }
   ];
 
-  const filteredTeachers = selectedDept === "All" 
-    ? teachers 
-    : teachers.filter(t => t.dept === selectedDept);
+  const teachers = [
+    { name: "Sarah Jenkins", role: "Head of Sciences", subject: "Physics & Chemistry", image: "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?q=60&w=400&auto=format&fit=crop" },
+    { name: "David Alaba", role: "Head of Humanities", subject: "History & Geography", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=60&w=400&auto=format&fit=crop" },
+    { name: "Elena Rodriguez", role: "Early Years Coordinator", subject: "Primary Education", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=60&w=400&auto=format&fit=crop" },
+    { name: "James Wilson", role: "Director of Athletics", subject: "Physical Education", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=60&w=400&auto=format&fit=crop" },
+    { name: "Amira Hassan", role: "Technology Integrationist", subject: "Computer Science", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=60&w=400&auto=format&fit=crop" },
+    { name: "Michael Chang", role: "Head of Arts", subject: "Fine Arts & Music", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=60&w=400&auto=format&fit=crop" },
+  ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-cyber-grid font-sans text-xs relative overflow-hidden">
+    <div className="min-h-screen flex flex-col font-sans bg-slate-50 text-slate-800">
       <PublicHeader />
 
-      {/* Glow */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
-
-      <main className="max-w-5xl mx-auto px-6 py-16 space-y-12 relative">
-        
-        {/* Title */}
-        <div className="text-center space-y-2">
-          <span className="inline-flex px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-400 font-bold uppercase tracking-wider text-[8px]">FACULTY MATRIX</span>
-          <h2 className="text-3xl font-extrabold font-outfit text-foreground tracking-tight">Our Academic Mentors</h2>
-          <p className="text-xs text-foreground/60 max-w-xl mx-auto">
-            Meet the researchers, doctorate heads, and senior computer specialists who guide our scholars daily.
+      {/* Hero Section */}
+      <section className="pt-40 pb-20 px-6 bg-white border-b border-slate-100">
+        <div className="max-w-7xl mx-auto text-center space-y-6">
+          <span className="inline-flex px-4 py-1.5 rounded-full bg-indigo-50 text-indigo-700 font-bold uppercase tracking-wider text-xs">Our Faculty</span>
+          <h1 className="text-5xl md:text-7xl font-extrabold font-outfit text-slate-900 tracking-tight">
+            Meet our <span className="text-indigo-600">Educators.</span>
+          </h1>
+          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            Our faculty consists of globally trained, passionate experts dedicated to shaping the next generation of leaders and innovators.
           </p>
         </div>
+      </section>
 
-        {/* Filter buttons */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 border-b border-foreground/5 font-semibold text-[10px]">
-          {departments.map((dept) => (
-            <button
-              key={dept}
-              onClick={() => setSelectedDept(dept)}
-              className={`px-3 py-1.5 rounded-lg border shrink-0 transition-all cursor-pointer ${
-                selectedDept === dept
-                  ? "bg-indigo-500/10 border-indigo-500/25 text-indigo-400"
-                  : "bg-white/5 border-foreground/5 text-foreground/60 hover:bg-white/10"
-              }`}
-            >
-              {dept}
-            </button>
-          ))}
-        </div>
-
-        {/* Faculty Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-sans">
-          {filteredTeachers.map((t, idx) => (
-            <div key={idx} className="glass-panel p-6 rounded-2xl border border-foreground/5 bg-white/[0.01] flex items-start gap-4 hover:border-indigo-500/20 transition-all">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white border border-indigo-400/20 font-bold text-lg shrink-0">
-                {t.name[4]}
-              </div>
-
-              <div className="space-y-3 w-full">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-extrabold text-sm text-foreground">{t.name}</h3>
-                    <span className="inline-flex px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 text-[8px] font-mono font-bold uppercase">{t.dept}</span>
+      {/* Leadership Section */}
+      <section className="py-24 px-6 bg-slate-50">
+        <div className="max-w-7xl mx-auto space-y-12">
+          <h2 className="text-3xl font-bold font-outfit text-slate-900 border-b border-slate-200 pb-4">School Leadership</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {leadership.map((leader, idx) => (
+              <div key={idx} className="bg-white rounded-[32px] p-8 md:p-10 shadow-xl shadow-slate-200 border border-slate-100 flex flex-col sm:flex-row gap-8 items-center sm:items-start text-center sm:text-left">
+                <img src={leader.image} loading="lazy" alt={leader.name} className="w-32 h-32 rounded-full object-cover shrink-0 shadow-lg" />
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-2xl font-bold font-outfit text-slate-900">{leader.name}</h3>
+                    <p className="text-indigo-600 font-bold text-sm uppercase tracking-wider mt-1">{leader.role}</p>
                   </div>
-                  <p className="text-[10px] text-foreground/50 font-mono mt-0.5">{t.role}</p>
-                </div>
-
-                <div className="space-y-1.5 border-t border-foreground/5 pt-3 text-[10px] text-foreground/60 leading-relaxed font-light">
-                  <p className="flex items-center gap-1.5"><GraduationCap className="w-3.5 h-3.5 text-indigo-400 shrink-0" /> {t.qual}</p>
-                  <p className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-indigo-400 shrink-0" /> Focus: {t.subjects.join(", ")}</p>
+                  <p className="text-slate-600 leading-relaxed">{leader.bio}</p>
+                  <div className="flex justify-center sm:justify-start gap-3 pt-2">
+                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-600 hover:text-white transition-colors"><Mail className="w-4 h-4" /></button>
+                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-600 hover:text-white transition-colors"><Linkedin className="w-4 h-4" /></button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
+      </section>
 
-      </main>
+      {/* Teaching Faculty Section */}
+      <section className="py-24 px-6 bg-white">
+        <div className="max-w-7xl mx-auto space-y-12">
+          <h2 className="text-3xl font-bold font-outfit text-slate-900 border-b border-slate-200 pb-4">Teaching Faculty</h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {teachers.map((teacher, idx) => (
+              <div key={idx} className="group bg-slate-50 rounded-[24px] overflow-hidden border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center pb-8">
+                <div className="w-full h-64 overflow-hidden mb-6 relative">
+                  <img src={teacher.image} loading="lazy" alt={teacher.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-6">
+                    <div className="flex gap-3">
+                      <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-indigo-600 transition-colors"><Mail className="w-4 h-4" /></button>
+                      <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-indigo-600 transition-colors"><Linkedin className="w-4 h-4" /></button>
+                    </div>
+                  </div>
+                </div>
+                <div className="px-6 space-y-1">
+                  <h3 className="text-xl font-bold font-outfit text-slate-900">{teacher.name}</h3>
+                  <p className="text-indigo-600 font-bold text-sm">{teacher.role}</p>
+                  <p className="text-slate-500 text-sm pt-2">{teacher.subject}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <PublicFooter />
     </div>

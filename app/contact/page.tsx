@@ -2,154 +2,111 @@
 
 import PublicHeader from "@/components/layout/PublicHeader";
 import PublicFooter from "@/components/layout/PublicFooter";
-import { useState } from "react";
-import { Mail, Phone, MapPin, Send, HelpCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Mail, Phone, MapPin, Send, Clock } from "lucide-react";
 
 export default function ContactPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [msg, setMsg] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-
-  const handleMessageSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !email || !msg) return;
-
-    setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      setSuccess(true);
-      setName("");
-      setEmail("");
-      setMsg("");
-    }, 1500);
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-cyber-grid font-sans text-xs relative overflow-hidden">
+    <div className="min-h-screen flex flex-col font-sans bg-slate-50 text-slate-800">
       <PublicHeader />
 
-      {/* Glow */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
-
-      <main className="max-w-5xl mx-auto px-6 py-16 space-y-12 relative">
-        
-        {/* Title */}
-        <div className="text-center space-y-2">
-          <span className="inline-flex px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-400 font-bold uppercase tracking-wider text-[8px]">CONTACT GATE</span>
-          <h2 className="text-3xl font-extrabold font-outfit text-foreground tracking-tight">Establish Communication Channels</h2>
-          <p className="text-xs text-foreground/60 max-w-xl mx-auto">
-            Directly communicate with academic registrars, administrative trustees, or developers from ZAYA CODE HUB.
-          </p>
-        </div>
-
-        {/* Contact info and Form */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+      <section className="pt-40 pb-24 px-6 bg-white border-b border-slate-100">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16">
           
-          {/* Roster & Info details */}
-          <div className="space-y-6">
-            <div className="glass-panel p-6 rounded-2xl border border-foreground/5 bg-white/[0.01] space-y-4">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-foreground">School coordinates</h3>
-              <ul className="space-y-4 text-foreground/60 leading-relaxed font-light text-[11px] font-sans">
-                <li className="flex items-start gap-2.5">
-                  <MapPin className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-                  <div>
-                    <h5 className="font-bold text-foreground">Stellar Campus Address</h5>
-                    <p className="mt-0.5">Plot 22, Cyberpark Avenue, Sector 5, Bangalore - 560001</p>
-                  </div>
-                </li>
-
-                <li className="flex items-start gap-2.5">
-                  <Phone className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-                  <div>
-                    <h5 className="font-bold text-foreground">Institution Registrar Telephones</h5>
-                    <p className="mt-0.5">+91 98765 43210 • Monday to Friday (08:00 - 15:30)</p>
-                  </div>
-                </li>
-
-                <li className="flex items-start gap-2.5">
-                  <Mail className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-                  <div>
-                    <h5 className="font-bold text-foreground">Electronic Mail Boxes</h5>
-                    <p className="mt-0.5">support@readers.school • registrar@readers.school</p>
-                  </div>
-                </li>
-              </ul>
+          {/* Contact Info (Left Side) */}
+          <div className="w-full lg:w-5/12 space-y-10">
+            <div className="space-y-4">
+              <span className="inline-flex px-4 py-1.5 rounded-full bg-rose-50 text-rose-700 font-bold uppercase tracking-wider text-xs">Get in Touch</span>
+              <h1 className="text-5xl font-extrabold font-outfit text-slate-900 tracking-tight leading-tight">
+                We'd love to <br/><span className="text-rose-600">hear from you.</span>
+              </h1>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                Whether you're a prospective parent, a community partner, or looking for career opportunities, our doors are always open.
+              </p>
             </div>
 
-            {/* Google Map Mockup */}
-            <div className="glass-panel rounded-2xl h-44 border border-foreground/5 bg-white/[0.01] flex items-center justify-center text-foreground/40 font-mono font-bold tracking-widest relative overflow-hidden">
-              <div className="absolute inset-0 bg-indigo-500/[0.02]" />
-              🗺️ MAP POSITION: BANGALORE NODE [22.84, 77.29]
+            <div className="space-y-8">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-lg">Main Campus</h4>
+                  <p className="text-slate-600">123 Academic Avenue, Knowledge City<br/>Rautahat District, Nepal</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+                  <Phone className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-lg">Phone Numbers</h4>
+                  <p className="text-slate-600">Admissions: +977 123 456 7890<br/>General: +977 123 456 7891</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-lg">Email Addresses</h4>
+                  <p className="text-slate-600">admissions@readersint.edu<br/>info@readersint.edu</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-lg">Visiting Hours</h4>
+                  <p className="text-slate-600">Monday - Friday: 08:00 AM - 04:00 PM<br/>Saturday & Sunday: Closed</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Form */}
-          <div className="glass-panel p-6 rounded-3xl border border-indigo-500/25 bg-indigo-500/[0.01] space-y-6">
-            <div>
-              <h3 className="font-bold font-outfit text-sm">Secure Message Dispatcher</h3>
-              <p className="text-[10px] text-foreground/50 mt-0.5">Your transmissions are cryptographically verified.</p>
-            </div>
-
-            {success ? (
-              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 space-y-2 text-center font-sans">
-                <h4 className="font-bold">Transmission Dispatched!</h4>
-                <p className="text-[10px] leading-relaxed">Your secure packet was successfully logged. Our support coordinators will follow up shortly.</p>
-                <button onClick={() => setSuccess(false)} className="text-[9px] underline font-bold mt-2 cursor-pointer">Transmit Another Packet</button>
-              </div>
-            ) : (
-              <form onSubmit={handleMessageSend} className="space-y-4 font-sans">
-                <div className="space-y-1">
-                  <label className="text-[9px] uppercase font-bold text-foreground/50 tracking-wider">Your Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Elena Rostova"
-                    className="glass-input px-3 py-2.5 rounded-lg w-full text-xs text-foreground"
-                  />
+          {/* Contact Form (Right Side) */}
+          <div className="w-full lg:w-7/12">
+            <div className="bg-white p-10 md:p-14 rounded-[40px] shadow-2xl shadow-slate-200/50 border border-slate-100">
+              <h3 className="text-3xl font-bold font-outfit text-slate-900 mb-8">Send us a Message</h3>
+              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">First Name</label>
+                    <input type="text" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-shadow" placeholder="John" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">Last Name</label>
+                    <input type="text" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-shadow" placeholder="Doe" />
+                  </div>
                 </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] uppercase font-bold text-foreground/50 tracking-wider">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@domain.com"
-                    className="glass-input px-3 py-2.5 rounded-lg w-full text-xs text-foreground"
-                  />
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700">Email Address</label>
+                  <input type="email" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-shadow" placeholder="john@example.com" />
                 </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] uppercase font-bold text-foreground/50 tracking-wider">Message Content</label>
-                  <textarea
-                    required
-                    value={msg}
-                    onChange={(e) => setMsg(e.target.value)}
-                    placeholder="Write your academic query details here..."
-                    className="glass-input p-3 rounded-lg w-full text-xs text-foreground h-24 resize-none font-sans"
-                  />
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700">Inquiry Type</label>
+                  <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-shadow text-slate-700">
+                    <option>Admissions Inquiry</option>
+                    <option>General Information</option>
+                    <option>Career Opportunities</option>
+                  </select>
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold shadow-md shadow-indigo-500/10 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                  Dispatch Message Packet
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700">Message</label>
+                  <textarea rows={5} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-shadow resize-none" placeholder="How can we help you?"></textarea>
+                </div>
+                <button className="w-full py-4 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-colors shadow-lg shadow-rose-600/20">
+                  Send Message <Send className="w-5 h-5" />
                 </button>
               </form>
-            )}
+            </div>
           </div>
 
         </div>
-
-      </main>
+      </section>
 
       <PublicFooter />
     </div>

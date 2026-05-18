@@ -2,55 +2,128 @@
 
 import PublicHeader from "@/components/layout/PublicHeader";
 import PublicFooter from "@/components/layout/PublicFooter";
-import { Calendar, ChevronRight, MessageSquare, Flame } from "lucide-react";
+import { CalendarDays, MapPin, Clock, ArrowRight } from "lucide-react";
 
 export default function EventsPage() {
-  const blogs = [
-    { id: 1, date: "May 18, 2026", title: "National Robotics Tournament Triumph", desc: "Our computational prompt alliance captured gold medal standings in this year's autonomous AI challenger segment.", author: "Administrator" },
-    { id: 2, date: "May 12, 2026", title: "Stellar Calculus Summer Boot Camp", desc: "Prof. Elena Rostova is hosting specialized mathematical seminars covering vector derivatives and neural geometry.", author: "Elena Rostova" },
-    { id: 3, date: "May 08, 2026", title: "Supabase Realtime Schema Upgrade v1.5", desc: "Our database trigger matrices and RLS structures have been fully migrated to support gamified streak progress parameters.", author: "Tech Desk" }
+  const events = [
+    {
+      title: "Annual Science & Innovation Fair",
+      date: "October 15, 2026",
+      time: "09:00 AM - 04:00 PM",
+      location: "Main Campus Exhibition Hall",
+      image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=60&w=800&auto=format&fit=crop",
+      desc: "Join us as our students present groundbreaking robotics, AI, and environmental science projects.",
+      featured: true
+    },
+    {
+      title: "Global Cultural Fest",
+      date: "November 02, 2026",
+      time: "10:00 AM - 06:00 PM",
+      location: "Open Amphitheater",
+      image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=60&w=800&auto=format&fit=crop",
+      desc: "A vibrant celebration of the 45+ nationalities represented at our school through food, music, and art.",
+      featured: false
+    },
+    {
+      title: "Tech & Robotics Expo",
+      date: "December 10, 2026",
+      time: "11:00 AM - 03:00 PM",
+      location: "Innovation Lab",
+      image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=60&w=800&auto=format&fit=crop",
+      desc: "Interactive demonstrations of student-built autonomous robots and coding projects.",
+      featured: false
+    },
+    {
+      title: "Winter Concert Series",
+      date: "December 18, 2026",
+      time: "06:00 PM - 08:30 PM",
+      location: "Grand Auditorium",
+      image: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=60&w=800&auto=format&fit=crop",
+      desc: "An enchanting evening of classical and contemporary music performed by the student orchestra.",
+      featured: false
+    }
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-cyber-grid font-sans text-xs relative overflow-hidden">
+    <div className="min-h-screen flex flex-col font-sans bg-slate-50 text-slate-800">
       <PublicHeader />
 
-      {/* Glow */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
-
-      <main className="max-w-5xl mx-auto px-6 py-16 space-y-12 relative">
-        
-        {/* Title */}
-        <div className="text-center space-y-2">
-          <span className="inline-flex px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-400 font-bold uppercase tracking-wider text-[8px]">ACADEMY BLOGS</span>
-          <h2 className="text-3xl font-extrabold font-outfit text-foreground tracking-tight">Announcements & Event Feeds</h2>
-          <p className="text-xs text-foreground/60 max-w-xl mx-auto">
-            Stay synchronised with academic calendars, student tournament announcements, and service migrations.
+      {/* Hero Section */}
+      <section className="pt-40 pb-24 px-6 bg-white border-b border-slate-100">
+        <div className="max-w-7xl mx-auto text-center space-y-6">
+          <span className="inline-flex px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 font-bold uppercase tracking-wider text-xs">Calendar & Events</span>
+          <h1 className="text-5xl md:text-7xl font-extrabold font-outfit text-slate-900 tracking-tight">
+            Campus <span className="text-blue-600">Happenings.</span>
+          </h1>
+          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            Stay engaged with our dynamic school community. From academic exhibitions to cultural celebrations, there is always something exciting happening.
           </p>
         </div>
+      </section>
 
-        {/* Blog Post Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-sans">
-          {blogs.map((b) => (
-            <div key={b.id} className="glass-panel p-5 rounded-2xl border border-foreground/5 bg-white/[0.01] hover:bg-white/[0.02] transition-colors flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-[9px] font-mono text-foreground/45">
-                  <span className="flex items-center gap-1"><Calendar className="w-3 text-indigo-400" /> {b.date}</span>
-                  <span>By: {b.author}</span>
-                </div>
-                <h4 className="font-bold text-xs text-foreground group-hover:text-indigo-400 transition-colors leading-snug">{b.title}</h4>
-                <p className="text-[11px] text-foreground/50 leading-relaxed font-light">{b.desc}</p>
+      {/* Featured Event */}
+      {events.filter(e => e.featured).map((evt, idx) => (
+        <section key={idx} className="py-24 px-6">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-2xl font-bold font-outfit text-slate-900 mb-8">Featured Event</h2>
+            <div className="bg-white rounded-[40px] shadow-2xl shadow-slate-200 overflow-hidden flex flex-col lg:flex-row border border-slate-100">
+              <div className="w-full lg:w-1/2">
+                <img src={evt.image} alt={evt.title} className="w-full h-full object-cover min-h-[400px]" />
               </div>
-
-              <div className="border-t border-foreground/5 pt-3 flex justify-between items-center text-[9px] font-mono font-bold text-indigo-400">
-                <span className="flex items-center gap-1 uppercase"><Flame className="w-3 text-indigo-400" /> Platform Active</span>
-                <span className="flex items-center gap-0.5 cursor-pointer hover:underline">Read Article <ChevronRight className="w-3" /></span>
+              <div className="w-full lg:w-1/2 p-10 md:p-16 flex flex-col justify-center space-y-6">
+                <h3 className="text-3xl md:text-4xl font-extrabold font-outfit text-slate-900">{evt.title}</h3>
+                <p className="text-lg text-slate-600 leading-relaxed">{evt.desc}</p>
+                <div className="space-y-4 pt-4">
+                  <div className="flex items-center gap-4 text-slate-700 font-medium">
+                    <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><CalendarDays className="w-5 h-5" /></div>
+                    {evt.date}
+                  </div>
+                  <div className="flex items-center gap-4 text-slate-700 font-medium">
+                    <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600"><Clock className="w-5 h-5" /></div>
+                    {evt.time}
+                  </div>
+                  <div className="flex items-center gap-4 text-slate-700 font-medium">
+                    <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-600"><MapPin className="w-5 h-5" /></div>
+                    {evt.location}
+                  </div>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        </section>
+      ))}
 
-      </main>
+      {/* Upcoming Events Grid */}
+      <section className="py-12 px-6 pb-32">
+        <div className="max-w-7xl mx-auto space-y-12">
+          <h2 className="text-3xl font-bold font-outfit text-slate-900">Upcoming Schedule</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {events.filter(e => !e.featured).map((evt, idx) => (
+              <div key={idx} className="bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                <div className="h-56 overflow-hidden relative">
+                  <img src={evt.image} alt={evt.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl text-sm font-bold text-slate-900 shadow-lg">
+                    {evt.date.split(',')[0]}
+                  </div>
+                </div>
+                <div className="p-8 space-y-4">
+                  <h3 className="text-2xl font-bold text-slate-900 font-outfit leading-tight">{evt.title}</h3>
+                  <p className="text-slate-600 text-base">{evt.desc}</p>
+                  <div className="pt-4 space-y-3">
+                    <div className="flex items-center gap-3 text-sm text-slate-700 font-medium">
+                      <Clock className="w-4 h-4 text-blue-600" /> {evt.time}
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-slate-700 font-medium">
+                      <MapPin className="w-4 h-4 text-rose-600" /> {evt.location}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <PublicFooter />
     </div>
