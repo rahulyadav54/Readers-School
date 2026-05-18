@@ -39,21 +39,21 @@ export default function Home() {
   const testimonials = [
     {
       text: "The Readers International School completely transformed our daughter's confidence. The teachers truly care about her emotional and academic growth.",
-      author: "Sarah Jenkins",
+      author: "Rubi Jaiswal",
       role: "Parent of Grade 8 Student",
-      avatar: "https://i.pravatar.cc/150?u=sarah"
+      avatar: "https://i.pravatar.cc/150?u=rubi"
     },
     {
       text: "I've never seen a school so dedicated to holistic development. The campus facilities are world-class, and the community is incredibly welcoming.",
-      author: "Michael Chang",
+      author: "Ram Lakhan Yadav",
       role: "Parent of Grade 5 Student",
-      avatar: "https://i.pravatar.cc/150?u=michael"
+      avatar: "https://i.pravatar.cc/150?u=ram"
     },
     {
       text: "The diverse international community here prepares students for the real world. My son is thriving and excited to go to school every day.",
-      author: "Elena Rodriguez",
+      author: "Pratima Sah",
       role: "Parent of Grade 10 Student",
-      avatar: "https://i.pravatar.cc/150?u=elena"
+      avatar: "https://i.pravatar.cc/150?u=pratima"
     }
   ];
 
