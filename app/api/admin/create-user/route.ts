@@ -18,9 +18,10 @@ export async function POST(request: Request) {
       classLevel,
       section,
       parentId,
+      rollNumber,
+      dob,
       address,
       // Parent specific fields
-      childId,
       occupation
     } = body;
 
@@ -76,8 +77,6 @@ export async function POST(request: Request) {
     const userId = authUser.id;
 
     // 3. Self-healing DB Upsert for Profiles table
-    // The postgres trigger on auth.users automatically inserts into public.profiles,
-    // but doing an upsert here guarantees that any lag is resolved and the correct role/full_name is set.
     const { error: profileError } = await supabase.from("profiles").upsert({
       id: userId,
       email: email,
@@ -90,28 +89,33 @@ export async function POST(request: Request) {
       console.warn("Profiles sync warning:", profileError.message);
     }
 
-    // 4. Role-Specific Data Placement with Self-Healing Fallbacks
+    // 4. Role-Specific Data Placement with Self-Healing Fallbacks (SHADS)
     if (role === "teacher") {
-      // Primary fields matching the live teachers table schema:
-      const teacherPayload: any = {
+      const baseTeacherPayload: any = {
         id: userId,
         specialization: specialization || "Core Science Faculty",
         department: department || "General Studies",
         hire_date: new Date().toISOString().split("T")[0]
       };
 
-      // Upsert into teachers table
-      const { error: teacherError } = await supabase.from("teachers").upsert(teacherPayload);
-      
-      if (teacherError) {
-        console.error("Teachers table sync error:", teacherError.message);
+      try {
+        // Attempt full insert with all requested fields
+        const { error: fullError } = await supabase.from("teachers").upsert({
+          ...baseTeacherPayload,
+          qualification: qualification || null,
+          phone: phone || null
+        });
+        if (fullError) throw fullError;
+      } catch (err) {
+        console.warn("Retrying standard teacher schema due to schema deviation:", err);
+        const { error: fallbackError } = await supabase.from("teachers").upsert(baseTeacherPayload);
+        if (fallbackError) {
+          console.error("Standard teacher sync failed:", fallbackError.message);
+        }
       }
 
-      // If additional columns like phone or qualification are needed, we can store them in profiles raw metadata
-      // or try to update profiles metadata to avoid Postgres missing-column crashes.
-
     } else if (role === "student") {
-      // Find class ID if class name matches or default to null
+      // Find class ID if class name matches
       let classId: string | null = null;
       if (classLevel) {
         const { data: classData } = await supabase
@@ -124,7 +128,7 @@ export async function POST(request: Request) {
         }
       }
 
-      const studentPayload: any = {
+      const baseStudentPayload: any = {
         id: userId,
         parent_id: parentId || null,
         class_id: classId,
@@ -134,21 +138,45 @@ export async function POST(request: Request) {
         streak: 0
       };
 
-      const { error: studentError } = await supabase.from("students").upsert(studentPayload);
-      if (studentError) {
-        console.error("Students table sync error:", studentError.message);
+      try {
+        // Attempt full insert with all fields
+        const { error: fullError } = await supabase.from("students").upsert({
+          ...baseStudentPayload,
+          roll_number: rollNumber ? parseInt(rollNumber) : null,
+          dob: dob || null,
+          address: address || null,
+          phone: phone || null
+        });
+        if (fullError) throw fullError;
+      } catch (err) {
+        console.warn("Retrying standard student schema due to schema deviation:", err);
+        const { error: fallbackError } = await supabase.from("students").upsert(baseStudentPayload);
+        if (fallbackError) {
+          console.error("Standard student sync failed:", fallbackError.message);
+        }
       }
 
     } else if (role === "parent") {
-      const parentPayload: any = {
+      const baseParentPayload: any = {
         id: userId,
         phone: phone || "Not provided",
         relationship: "Guardian"
       };
 
-      const { error: parentError } = await supabase.from("parents").upsert(parentPayload);
-      if (parentError) {
-        console.error("Parents table sync error:", parentError.message);
+      try {
+        // Attempt full insert with all fields
+        const { error: fullError } = await supabase.from("parents").upsert({
+          ...baseParentPayload,
+          address: address || null,
+          occupation: occupation || null
+        });
+        if (fullError) throw fullError;
+      } catch (err) {
+        console.warn("Retrying standard parent schema due to schema deviation:", err);
+        const { error: fallbackError } = await supabase.from("parents").upsert(baseParentPayload);
+        if (fallbackError) {
+          console.error("Standard parent sync failed:", fallbackError.message);
+        }
       }
     }
 

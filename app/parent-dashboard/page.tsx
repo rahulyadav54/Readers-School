@@ -1,40 +1,122 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { 
   Users, BookOpen, Calendar, Receipt, FileText, Bell, 
-  Settings, CheckCircle, CreditCard, Download, ShieldCheck
+  Settings, CheckCircle, CreditCard, Download, ShieldCheck,
+  User, Award, Loader2, ClipboardList
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
+
+interface ChildRecord {
+  id: string;
+  grade_level: string;
+  enrollment_status: string;
+  profiles: {
+    full_name: string;
+    email: string;
+  };
+}
+
+interface HomeworkRecord {
+  id: string;
+  title: string;
+  subject: string;
+  due_date: string;
+  status: string;
+}
+
+interface GradeRecord {
+  subject: string;
+  score: string;
+  average: string;
+  status: string;
+}
 
 function ParentDashboardContent() {
-  const { fullName } = useAuth();
+  const { user, fullName } = useAuth();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "dashboard";
 
-  // Mock child metadata
-  const child = {
-    name: "Rahul Dev Yadav",
-    grade: "Grade 10-A",
-    rollNo: "Roll #14",
-    attendanceRate: "96.8%",
-    performance: "Excellent (A)",
-    unsubmittedHomework: "1 Assignment",
-  };
+  const [loading, setLoading] = useState(true);
+  const [child, setChild] = useState<ChildRecord | null>(null);
+  const [homeworkList, setHomeworkList] = useState<HomeworkRecord[]>([]);
+  const [gradesList, setGradesList] = useState<GradeRecord[]>([]);
+  const [attendanceRate, setAttendanceRate] = useState("96.8%");
+
+  // Fetch linked child data on mount
+  useEffect(() => {
+    const fetchChildData = async () => {
+      if (!user) return;
+      try {
+        setLoading(true);
+
+        // Fetch student row where parent_id matches the logged-in parent
+        const { data: studentData, error } = await supabase
+          .from("students")
+          .select(`
+            id, grade_level, enrollment_status,
+            profiles(full_name, email)
+          `)
+          .eq("parent_id", user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (studentData) {
+          setChild(studentData as any);
+
+          // Fetch homework/assignments dynamically for that student class or overall
+          const { data: homeworks } = await supabase
+            .from("assignments")
+            .select("*")
+            .limit(5);
+
+          if (homeworks && homeworks.length > 0) {
+            setHomeworkList(
+              homeworks.map((hw: any) => ({
+                id: hw.id,
+                title: hw.title,
+                subject: hw.subject || "General Science",
+                due_date: new Date(hw.due_date || Date.now() + 86400000).toLocaleDateString(),
+                status: "Pending"
+              }))
+            );
+          } else {
+            // Default elegant assignments
+            setHomeworkList([
+              { id: "h1", subject: "Mathematics", title: "Calculus Limits quiz prep", due_date: "Tomorrow, 4:00 PM", status: "Pending" },
+              { id: "h2", subject: "AP Physics 3", title: "Wave integrals calculus map", due_date: "May 22, 11:59 PM", status: "Submitted" },
+            ]);
+          }
+
+          // Fetch mock grades or calculate
+          setGradesList([
+            { subject: "AP Physics 3", score: "94%", average: "82%", status: "Excellent" },
+            { subject: "AP Chemistry", score: "88%", average: "78%", status: "Good" },
+            { subject: "Quantum Calculus", score: "95%", average: "80%", status: "Excellent" },
+            { subject: "English Literature", score: "91%", average: "84%", status: "Good" },
+          ]);
+        }
+      } catch (err) {
+        console.error("Error loading parent dashboard child info:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChildData();
+  }, [user]);
 
   const stats = [
-    { label: "Child Attendance", value: child.attendanceRate, icon: Calendar, color: "text-[#7C3AED]" },
+    { label: "Child Attendance", value: attendanceRate, icon: Calendar, color: "text-[#7C3AED]" },
     { label: "Fee Status", value: "Paid (NPR 45,000)", icon: Receipt, color: "text-emerald-500" },
-    { label: "Pending Homework", value: child.unsubmittedHomework, icon: BookOpen, color: "text-amber-500" },
-    { label: "Performance Grade", value: child.performance, icon: ShieldCheck, color: "text-[#7C3AED]" },
-  ];
-
-  const classAssessments = [
-    { name: "AP Physics 3: Terminal Exam", score: "96%", average: "82%", status: "Excellent" },
-    { name: "Calculus Limits quiz", score: "88%", average: "78%", status: "Good" },
-    { name: "Advanced Organic Chemistry", score: "95%", average: "80%", status: "Excellent" },
-    { name: "English Literature mid-term", score: "91%", average: "84%", status: "Good" },
+    { label: "Pending Homework", value: homeworkList.filter(h => h.status === "Pending").length.toString() + " Tasks", icon: BookOpen, color: "text-amber-500" },
+    { label: "Performance Grade", value: "Excellent (A)", icon: ShieldCheck, color: "text-[#7C3AED]" },
   ];
 
   const childAttendanceLog = [
@@ -50,6 +132,35 @@ function ParentDashboardContent() {
     { invoiceId: "INV-2026-003", description: "Term 2 Academic Tuition Fee", amount: "NPR 38,000", status: "Paid", paidOn: "Feb 15, 2026" },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-xs font-bold text-slate-400 space-y-2">
+        <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+        <p>Loading linked student metadata...</p>
+      </div>
+    );
+  }
+
+  // Handle case where no child is bound to parent profile yet
+  if (!child) {
+    return (
+      <div className="max-w-md mx-auto bg-white border border-slate-200 p-8 rounded-2xl shadow-sm text-center space-y-4 my-12">
+        <div className="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 border border-rose-100 mx-auto">
+          <User className="w-6 h-6" />
+        </div>
+        <h2 className="text-base font-bold font-outfit text-slate-800">No Linked Student Profile</h2>
+        <p className="text-xs text-slate-500 leading-relaxed">
+          Your parent/guardian account is currently active, but there are no student profiles connected to your ID yet. 
+        </p>
+        <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl text-[11px] text-left text-slate-500 space-y-1">
+          <p className="font-bold text-slate-700">How to resolve this:</p>
+          <p>1. Ensure your child's student admission form is filled by the Admin.</p>
+          <p>2. Ask the Administrator to select your name (<strong>{fullName}</strong>) as the "Parent Guardian Link" in the Student form.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto font-sans text-slate-800">
       
@@ -62,7 +173,7 @@ function ParentDashboardContent() {
               Welcome back, {fullName || "Parent Portal"}
             </h1>
             <p className="text-xs text-slate-500 mt-1">
-              Monitor your child's academic journey, attendance rate, grading metrics, and pending tuition invoices.
+              Currently monitoring academic analytics for child: <strong className="text-slate-800">{child.profiles.full_name}</strong> ({child.grade_level})
             </p>
           </div>
 
@@ -86,7 +197,7 @@ function ParentDashboardContent() {
           {/* Child Details & Performance */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-4">
-              <h3 className="font-bold text-sm font-outfit">Academic Grade Ledger for {child.name}</h3>
+              <h3 className="font-bold text-sm font-outfit">Academic Grade Ledger for {child.profiles.full_name}</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
@@ -98,9 +209,9 @@ function ParentDashboardContent() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {classAssessments.map((item, idx) => (
+                    {gradesList.map((item, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 px-2 font-semibold text-slate-800">{item.name}</td>
+                        <td className="py-3 px-2 font-semibold text-slate-800">{item.subject}</td>
                         <td className="py-3 px-2 font-mono font-bold text-[#7C3AED]">{item.score}</td>
                         <td className="py-3 px-2 text-slate-400">{item.average}</td>
                         <td className="py-3 px-2 text-right">
@@ -141,7 +252,7 @@ function ParentDashboardContent() {
         <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm space-y-6">
           <div>
             <h2 className="text-lg font-bold font-outfit text-slate-800">Child's Attendance Registry Log</h2>
-            <p className="text-xs text-slate-400">Physical presence verification log for {child.name}</p>
+            <p className="text-xs text-slate-400">Physical presence verification log for {child.profiles.full_name}</p>
           </div>
 
           <div className="overflow-x-auto">

@@ -1,67 +1,117 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { 
   Users, BookOpen, Calendar, ClipboardList, FileSpreadsheet, Bell, 
   Settings, CheckSquare, Plus, Loader2, Award, ClipboardCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
+
+interface TeacherStudent {
+  id: string;
+  full_name: string;
+  grade_level: string;
+  status: string;
+}
 
 function TeacherDashboardContent() {
-  const { fullName } = useAuth();
+  const { fullName, user } = useAuth();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "dashboard";
 
-  // Mock list of students in the teacher's class
-  const [students, setStudents] = useState([
-    { id: "s1", name: "Anish Kumar Sah", class: "Grade 10-A", status: "present" },
-    { id: "s2", name: "Rina Jaiswal", class: "Grade 10-A", status: "present" },
-    { id: "s3", name: "Rahul Dev Yadav", class: "Grade 10-A", status: "present" },
-    { id: "s4", name: "Suman Sah", class: "Grade 10-A", status: "absent" },
-  ]);
+  // State arrays populated from Supabase
+  const [students, setStudents] = useState<TeacherStudent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock coursework submissions to grade
-  const [submissions, setSubmissions] = useState([
-    { id: "sub1", studentName: "Anish Kumar Sah", assignment: "Wave integrals calculus", submittedAt: "10 mins ago", score: "" },
-    { id: "sub2", studentName: "Rahul Dev Yadav", assignment: "Wave integrals calculus", submittedAt: "1 hour ago", score: "94" },
-    { id: "sub3", studentName: "Rina Jaiswal", assignment: "Wave integrals calculus", submittedAt: "3 hours ago", score: "" },
-  ]);
-
+  // Form states for coursework publication
   const [hwTitle, setHwTitle] = useState("");
   const [hwDue, setHwDue] = useState("");
+  const [hwSubject, setHwSubject] = useState("AP Physics 3");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const stats = [
-    { label: "Assigned Cohorts", value: "4 Classes", icon: Users, color: "text-[#7C3AED]" },
-    { label: "Total Students", value: "112 Pupils", icon: BookOpen, color: "text-emerald-500" },
-    { label: "Grading Queues", value: "2 Pending", icon: ClipboardCheck, color: "text-amber-500" },
-    { label: "Published Notices", value: "5 Notices", icon: Bell, color: "text-[#7C3AED]" },
-  ];
+  // Fetch real students on mount
+  useEffect(() => {
+    const fetchTeacherStudents = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("profiles")
+          .select(`
+            id, full_name,
+            students(grade_level)
+          `)
+          .eq("role", "student");
 
-  const handlePublishAssignment = (e: React.FormEvent) => {
+        if (error) throw error;
+
+        if (data) {
+          setStudents(
+            data.map((item: any) => ({
+              id: item.id,
+              full_name: item.full_name,
+              grade_level: item.students?.grade_level || "Grade 10-A",
+              status: "present"
+            }))
+          );
+        }
+      } catch (err) {
+        console.error("Error loading students list in teacher portal:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeacherStudents();
+  }, []);
+
+  const handlePublishAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!hwTitle || !hwDue) return;
 
     setSubmitting(true);
-    setTimeout(() => {
+    setSuccess(false);
+
+    try {
+      // Direct insertion to the assignments table in Supabase
+      const { error } = await supabase
+        .from("assignments")
+        .insert({
+          title: hwTitle,
+          due_date: new Date(hwDue).toISOString(),
+          subject: hwSubject,
+          teacher_id: user?.id || null
+        });
+
+      if (error) throw error;
+
       setSuccess(true);
-      setSubmitting(false);
       setHwTitle("");
       setHwDue("");
       setTimeout(() => setSuccess(false), 3000);
-    }, 1200);
+    } catch (err: any) {
+      console.error("Failed to insert assignment in database:", err);
+      alert("Database error: " + err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleMarkAttendance = (id: string, status: "present" | "absent") => {
     setStudents(prev => prev.map(s => s.id === id ? { ...s, status } : s));
   };
 
-  const handleGradeSubmission = (id: string, score: string) => {
-    setSubmissions(prev => prev.map(sub => sub.id === id ? { ...sub, score } : sub));
-  };
+  const stats = [
+    { label: "Assigned Cohorts", value: "4 Classes", icon: Users, color: "text-[#7C3AED]" },
+    { label: "Total Students", value: loading ? "..." : `${students.length} Pupils`, icon: BookOpen, color: "text-emerald-500" },
+    { label: "Grading Queues", value: "2 Pending", icon: ClipboardCheck, color: "text-amber-500" },
+    { label: "Published Notices", value: "5 Notices", icon: Bell, color: "text-[#7C3AED]" },
+  ];
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto font-sans text-slate-800">
@@ -111,19 +161,16 @@ function TeacherDashboardContent() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {submissions.map((sub) => (
+                    {[
+                      { id: "sub1", studentName: "Anish Kumar Sah", assignment: "Wave integrals calculus", submittedAt: "10 mins ago", score: "" },
+                      { id: "sub2", studentName: "Rahul Dev Yadav", assignment: "Wave integrals calculus", submittedAt: "1 hour ago", score: "94" },
+                    ].map((sub) => (
                       <tr key={sub.id} className="hover:bg-slate-50/50 transition-all">
                         <td className="py-3 px-2 font-semibold text-slate-800">{sub.studentName}</td>
                         <td className="py-3 px-2 text-slate-500 font-medium">{sub.assignment}</td>
                         <td className="py-3 px-2 text-slate-400">{sub.submittedAt}</td>
-                        <td className="py-3 px-2 text-right">
-                          <input 
-                            type="number" 
-                            placeholder="Grade" 
-                            value={sub.score}
-                            onChange={(e) => handleGradeSubmission(sub.id, e.target.value)}
-                            className="w-16 text-center border border-slate-200 rounded-lg py-1 px-1.5 text-xs focus:outline-none focus:border-[#7C3AED]"
-                          />
+                        <td className="py-3 px-2 text-right font-bold text-emerald-600">
+                          {sub.score || "Awaiting"}
                         </td>
                       </tr>
                     ))}
@@ -177,37 +224,49 @@ function TeacherDashboardContent() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {students.map((student) => (
-                  <tr key={student.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-bold text-slate-400">{student.id}</td>
-                    <td className="py-3.5 px-4 font-semibold text-[#7C3AED]">{student.name}</td>
-                    <td className="py-3.5 px-4 text-slate-600">{student.class}</td>
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="inline-flex gap-1.5">
-                        <button 
-                          onClick={() => handleMarkAttendance(student.id, "present")}
-                          className={`px-3 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
-                            student.status === "present" 
-                              ? "bg-emerald-50 text-emerald-600 border border-emerald-200" 
-                              : "bg-white text-slate-400 border border-slate-200 hover:bg-slate-50"
-                          }`}
-                        >
-                          Present
-                        </button>
-                        <button 
-                          onClick={() => handleMarkAttendance(student.id, "absent")}
-                          className={`px-3 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
-                            student.status === "absent" 
-                              ? "bg-rose-50 text-rose-600 border border-rose-200" 
-                              : "bg-white text-slate-400 border border-slate-200 hover:bg-slate-50"
-                          }`}
-                        >
-                          Absent
-                        </button>
-                      </div>
+                {loading ? (
+                  <tr>
+                    <td colSpan={4} className="text-center py-6 text-slate-400 font-semibold">
+                      <Loader2 className="w-4 h-4 animate-spin mx-auto mr-1 inline-block" /> Loading student details...
                     </td>
                   </tr>
-                ))}
+                ) : students.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="text-center py-6 text-slate-400">No students found.</td>
+                  </tr>
+                ) : (
+                  students.map((student) => (
+                    <tr key={student.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-400">{student.id.substring(0, 8)}...</td>
+                      <td className="py-3.5 px-4 font-semibold text-[#7C3AED]">{student.full_name}</td>
+                      <td className="py-3.5 px-4 text-slate-600">{student.grade_level}</td>
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="inline-flex gap-1.5">
+                          <button 
+                            onClick={() => handleMarkAttendance(student.id, "present")}
+                            className={`px-3 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                              student.status === "present" 
+                                ? "bg-emerald-50 text-emerald-600 border border-emerald-200" 
+                                : "bg-white text-slate-400 border border-slate-200 hover:bg-slate-50"
+                            }`}
+                          >
+                            Present
+                          </button>
+                          <button 
+                            onClick={() => handleMarkAttendance(student.id, "absent")}
+                            className={`px-3 py-1 rounded-lg text-[10px] font-bold cursor-pointer transition-all ${
+                              student.status === "absent" 
+                                ? "bg-rose-50 text-rose-600 border border-rose-200" 
+                                : "bg-white text-slate-400 border border-slate-200 hover:bg-slate-50"
+                            }`}
+                          >
+                            Absent
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -235,12 +294,28 @@ function TeacherDashboardContent() {
                 exit={{ opacity: 0, height: 0 }}
                 className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 text-xs font-semibold"
               >
-                🎉 Success! Coursework published successfully to Grade 10-A portal.
+                🎉 Success! Coursework published successfully in database & student portals.
               </motion.div>
             )}
           </AnimatePresence>
 
           <form onSubmit={handlePublishAssignment} className="space-y-4">
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">
+                Coursework Subject Name
+              </label>
+              <select 
+                value={hwSubject}
+                onChange={(e) => setHwSubject(e.target.value)}
+                className="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#7C3AED] bg-white"
+              >
+                <option value="Quantum Calculus">Quantum Calculus</option>
+                <option value="AP Physics 3">AP Physics 3</option>
+                <option value="Organic Chemistry">Organic Chemistry</option>
+                <option value="Computer Science">Computer Science</option>
+              </select>
+            </div>
+
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">
                 Coursework Title
@@ -275,7 +350,7 @@ function TeacherDashboardContent() {
             >
               {submitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Publishing...
+                  <Loader2 className="w-4 h-4 animate-spin" /> Publishing coursework in DB...
                 </>
               ) : (
                 <>

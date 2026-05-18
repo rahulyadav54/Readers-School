@@ -8,7 +8,7 @@ import {
   Settings, Search, UserPlus, Lock, Mail, Loader2, 
   ArrowUpRight, ArrowDownRight, CheckCircle, ShieldAlert,
   Plus, CalendarDays, ClipboardList, FileText, Check, Trash2, Edit,
-  Briefcase, Phone, BookOpenCheck, MapPin, GraduationCap as SchoolLogo
+  Briefcase, Phone, BookOpenCheck, MapPin, GraduationCap as SchoolLogo, X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -16,47 +16,55 @@ import {
   ResponsiveContainer, AreaChart, Area, Legend
 } from "recharts";
 import { useSearchParams, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
-// TypeScript models
-interface StudentRecord {
-  id: string;
-  name: string;
-  class: string;
-  attendance: string;
-  feeStatus: "Paid" | "Pending" | "Overdue";
-  performance: "Excellent" | "Good" | "Average" | "Needs Imp.";
-}
+// Supabase client instance
+const supabase = createClient();
 
-interface TeacherRecord {
+// Data Models
+interface ProfileRecord {
   id: string;
-  name: string;
-  subject: string;
+  full_name: string;
   email: string;
-  status: "Active" | "On Leave";
-}
-
-interface ParentRecord {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  childName: string;
+  role: "admin" | "student" | "teacher" | "parent";
+  created_at: string;
+  parents?: {
+    phone: string;
+    relationship: string;
+  } | null;
+  students?: {
+    parent_id: string | null;
+    grade_level: string;
+    enrollment_status: string;
+  } | null;
+  teachers?: {
+    specialization: string;
+    department: string;
+    hire_date: string;
+  } | null;
 }
 
 function AdminDashboardContent() {
-  const { user, fullName, role, isLoading } = useAuth();
+  const { user, fullName, role: activeUserRole, isLoading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const activeTab = searchParams.get("tab") || "dashboard";
 
+  // Data List States (fetched in real-time from Supabase)
+  const [studentsList, setStudentsList] = useState<ProfileRecord[]>([]);
+  const [teachersList, setTeachersList] = useState<ProfileRecord[]>([]);
+  const [parentsList, setParentsList] = useState<ProfileRecord[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+
   // Search & Filter States
   const [searchQuery, setSearchQuery] = useState("");
+  const [parentSearchQuery, setParentSearchQuery] = useState("");
 
   // Base Account Provisioner States
   const [provName, setProvName] = useState("");
   const [provEmail, setProvEmail] = useState("");
   const [provPass, setProvPass] = useState("");
-  const [provRole, setProvRole] = useState<"student" | "teacher" | "parent">("student");
+  const [provRole, setProvRole] = useState<"student" | "teacher" | "parent">("parent");
   
   // Dynamic Role Specific States
   // 1. Teacher Fields
@@ -73,7 +81,7 @@ function AdminDashboardContent() {
   const [address, setAddress] = useState("");
 
   // 3. Parent Fields
-  const [childId, setChildId] = useState("");
+  const [parentAddress, setParentAddress] = useState("");
   const [parentPhone, setParentPhone] = useState("");
   const [occupation, setOccupation] = useState("");
 
@@ -81,41 +89,61 @@ function AdminDashboardContent() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Mock database entries (fully searchable & manageable)
-  const [studentsList, setStudentsList] = useState<StudentRecord[]>([
-    { id: "s1", name: "Anish Kumar Sah", class: "Grade 10-A", attendance: "98%", feeStatus: "Paid", performance: "Excellent" },
-    { id: "s2", name: "Rina Jaiswal", class: "Grade 9-B", attendance: "94%", feeStatus: "Pending", performance: "Good" },
-    { id: "s3", name: "Rahul Dev Yadav", class: "Grade 10-A", attendance: "96%", feeStatus: "Paid", performance: "Excellent" },
-    { id: "s4", name: "Suman Sah", class: "Grade 8-A", attendance: "88%", feeStatus: "Overdue", performance: "Average" },
-    { id: "s5", name: "Pooja Thakur", class: "Grade 7-C", attendance: "92%", feeStatus: "Paid", performance: "Good" },
-    { id: "s6", name: "Sunil Shrestha", class: "Grade 10-B", attendance: "82%", feeStatus: "Pending", performance: "Needs Imp." },
-  ]);
+  // Edit Modal States
+  const [editingUser, setEditingUser] = useState<ProfileRecord | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editExtraField1, setEditExtraField1] = useState(""); // dept, classLevel, address
+  const [editExtraField2, setEditExtraField2] = useState(""); // spec, section, occupation
+  const [updatingUser, setUpdatingUser] = useState(false);
 
-  const [teachersList, setTeachersList] = useState<TeacherRecord[]>([
-    { id: "t1", name: "Dr. Evelyn Vance", subject: "AP Chemistry", email: "evelyn@readers.school", status: "Active" },
-    { id: "t2", name: "Prof. Clara Mercer", subject: "Quantum Calculus", email: "clara@readers.school", status: "Active" },
-    { id: "t3", name: "Dr. Adrian Thorne", subject: "AP Physics", email: "adrian@readers.school", status: "On Leave" },
-  ]);
+  // Load Real-time Data from Supabase
+  const fetchData = async () => {
+    try {
+      setLoadingData(true);
+      
+      // 1. Fetch Students
+      const { data: studentsData } = await supabase
+        .from("profiles")
+        .select(`
+          id, full_name, email, role, created_at,
+          students(parent_id, grade_level, enrollment_status)
+        `)
+        .eq("role", "student");
 
-  const [parentsList, setParentsList] = useState<ParentRecord[]>([
-    { id: "p1", name: "Lakhan Yadav", email: "lakhan@gmail.com", phone: "+977 9851023456", childName: "Rahul Dev Yadav" },
-    { id: "p2", name: "Bikash Sah", email: "bikash@gmail.com", phone: "+977 9801034567", childName: "Anish Kumar Sah" },
-  ]);
+      // 2. Fetch Teachers
+      const { data: teachersData } = await supabase
+        .from("profiles")
+        .select(`
+          id, full_name, email, role, created_at,
+          teachers(specialization, department, hire_date)
+        `)
+        .eq("role", "teacher");
 
-  // Analytics Chart Data
-  const growthData = [
-    { name: "Term 1", Students: 840, Teachers: 52 },
-    { name: "Term 2", Students: 980, Teachers: 61 },
-    { name: "Term 3", Students: 1120, Teachers: 68 },
-    { name: "Term 4", Students: 1248, Teachers: 74 },
-  ];
+      // 3. Fetch Parents
+      const { data: parentsData } = await supabase
+        .from("profiles")
+        .select(`
+          id, full_name, email, role, created_at,
+          parents(phone, relationship)
+        `)
+        .eq("role", "parent");
 
-  const revenueData = [
-    { name: "Jan", Collected: 420000, Pending: 120000 },
-    { name: "Feb", Collected: 680000, Pending: 150000 },
-    { name: "Mar", Collected: 890000, Pending: 90000 },
-    { name: "Apr", Collected: 1140000, Pending: 230000 },
-  ];
+      if (studentsData) setStudentsList(studentsData as any);
+      if (teachersData) setTeachersList(teachersData as any);
+      if (parentsData) setParentsList(parentsData as any);
+      
+    } catch (err) {
+      console.error("Error loading Supabase tables:", err);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   // User Provisioning Logic - Connects directly to stateless backend API
   const handleProvisionUser = async (e: React.FormEvent) => {
@@ -145,12 +173,12 @@ function AdminDashboardContent() {
     } else if (provRole === "student") {
       requestBody.classLevel = classLevel;
       requestBody.section = section;
-      requestBody.parentId = parentId;
+      requestBody.parentId = parentId || null;
       requestBody.phone = studentPhone;
       requestBody.address = address;
     } else if (provRole === "parent") {
-      requestBody.childId = childId;
       requestBody.phone = parentPhone;
+      requestBody.address = parentAddress;
       requestBody.occupation = occupation;
     }
 
@@ -164,44 +192,10 @@ function AdminDashboardContent() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to provision secure database account.");
 
-      setSuccessMsg(`🎉 Success! Supabase Auth login account has been created, and role-specific tables have been synchronized for ${provName}. User can login immediately!`);
+      setSuccessMsg(`🎉 Success! Supabase Auth login credentials created, and profile synchronized for ${provName}. User can login immediately!`);
       
-      // Update local listing states for instant feedback
-      if (provRole === "student") {
-        setStudentsList(prev => [
-          ...prev,
-          { 
-            id: data.user?.id || `s_${Date.now()}`, 
-            name: provName, 
-            class: classLevel, 
-            attendance: "100%", 
-            feeStatus: "Pending", 
-            performance: "Good" 
-          }
-        ]);
-      } else if (provRole === "teacher") {
-        setTeachersList(prev => [
-          ...prev,
-          { 
-            id: data.user?.id || `t_${Date.now()}`, 
-            name: provName, 
-            subject: specialization || "General", 
-            email: provEmail, 
-            status: "Active" 
-          }
-        ]);
-      } else if (provRole === "parent") {
-        setParentsList(prev => [
-          ...prev,
-          { 
-            id: data.user?.id || `p_${Date.now()}`, 
-            name: provName, 
-            email: provEmail, 
-            phone: parentPhone || "Not provided", 
-            childName: "Registered Child" 
-          }
-        ]);
-      }
+      // Refresh Supabase registry
+      await fetchData();
 
       // Reset Form Inputs
       setProvName("");
@@ -214,7 +208,7 @@ function AdminDashboardContent() {
       setParentId("");
       setStudentPhone("");
       setAddress("");
-      setChildId("");
+      setParentAddress("");
       setParentPhone("");
       setOccupation("");
 
@@ -225,20 +219,125 @@ function AdminDashboardContent() {
     }
   };
 
-  const deleteStudent = (id: string) => {
-    setStudentsList(prev => prev.filter(s => s.id !== id));
+  // Delete User Logic (deletes from profiles table, which cascade deletes role tables)
+  const handleDeleteUser = async (userId: string, role: string) => {
+    if (!confirm("⚠️ WARNING: Are you sure you want to delete this user profile? All related records will be cascade-deleted from corresponding tables.")) return;
+
+    try {
+      const { error } = await supabase.from("profiles").delete().eq("id", userId);
+      if (error) throw error;
+
+      // Refresh list
+      await fetchData();
+      alert("User profile deleted successfully.");
+    } catch (err: any) {
+      alert("Failed to delete user profile: " + err.message);
+    }
   };
 
-  const deleteTeacher = (id: string) => {
-    setTeachersList(prev => prev.filter(t => t.id !== id));
+  // Edit User Trigger
+  const handleOpenEditModal = (profile: ProfileRecord) => {
+    setEditingUser(profile);
+    setEditName(profile.full_name);
+    setEditEmail(profile.email);
+    
+    if (profile.role === "student") {
+      setEditPhone("");
+      setEditExtraField1(profile.students?.grade_level || "");
+      setEditExtraField2(profile.students?.enrollment_status || "active");
+    } else if (profile.role === "teacher") {
+      setEditPhone("");
+      setEditExtraField1(profile.teachers?.department || "");
+      setEditExtraField2(profile.teachers?.specialization || "");
+    } else if (profile.role === "parent") {
+      setEditPhone(profile.parents?.phone || "");
+      setEditExtraField1(profile.parents?.relationship || "Guardian");
+      setEditExtraField2("");
+    }
   };
 
-  const deleteParent = (id: string) => {
-    setParentsList(prev => prev.filter(p => p.id !== id));
+  // Save Edits Logic
+  const handleSaveEdits = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    setUpdatingUser(true);
+    try {
+      // 1. Update profiles table
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          full_name: editName,
+          email: editEmail,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", editingUser.id);
+
+      if (profileError) throw profileError;
+
+      // 2. Update role-specific table details
+      if (editingUser.role === "student") {
+        const { error: studentError } = await supabase
+          .from("students")
+          .update({
+            grade_level: editExtraField1,
+            enrollment_status: editExtraField2
+          })
+          .eq("id", editingUser.id);
+        if (studentError) throw studentError;
+      } else if (editingUser.role === "teacher") {
+        const { error: teacherError } = await supabase
+          .from("teachers")
+          .update({
+            department: editExtraField1,
+            specialization: editExtraField2
+          })
+          .eq("id", editingUser.id);
+        if (teacherError) throw teacherError;
+      } else if (editingUser.role === "parent") {
+        const { error: parentError } = await supabase
+          .from("parents")
+          .update({
+            phone: editPhone,
+            relationship: editExtraField1
+          })
+          .eq("id", editingUser.id);
+        if (parentError) throw parentError;
+      }
+
+      setEditingUser(null);
+      await fetchData();
+      alert("Profile modifications saved successfully.");
+    } catch (err: any) {
+      alert("Failed to save changes: " + err.message);
+    } finally {
+      setUpdatingUser(false);
+    }
   };
+
+  // Analytics Chart Data
+  const growthData = [
+    { name: "Term 1", Students: 840, Teachers: 52 },
+    { name: "Term 2", Students: 980, Teachers: 61 },
+    { name: "Term 3", Students: 1120, Teachers: 68 },
+    { name: "Term 4", Students: studentsList.length || 1248, Teachers: teachersList.length || 74 },
+  ];
+
+  const revenueData = [
+    { name: "Jan", Collected: 420000, Pending: 120000 },
+    { name: "Feb", Collected: 680000, Pending: 150000 },
+    { name: "Mar", Collected: 890000, Pending: 90000 },
+    { name: "Apr", Collected: 1140000, Pending: 230000 },
+  ];
+
+  // Dynamic Parent Filtering for searchable dropdown
+  const filteredParents = parentsList.filter(parent => 
+    parent.full_name.toLowerCase().includes(parentSearchQuery.toLowerCase()) ||
+    parent.email.toLowerCase().includes(parentSearchQuery.toLowerCase())
+  );
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto font-sans text-slate-800">
+    <div className="space-y-8 max-w-7xl mx-auto font-sans text-slate-800 relative z-0">
       
       {/* 1. Dynamic Tabs Display based on URL query */}
       {activeTab === "dashboard" && (
@@ -269,12 +368,12 @@ function AdminDashboardContent() {
             </div>
           </div>
 
-          {/* Clean SaaS-style Stats Grid */}
+          {/* Dynamic real-time Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
             {[
-              { label: "Total Students", value: "1,248", icon: GraduationCap, color: "text-[#7C3AED]", trend: "+14%" },
-              { label: "Total Teachers", value: "74", icon: BookOpen, color: "text-emerald-500", trend: "+4%" },
-              { label: "Revenue Collected", value: "NPR 3.68M", icon: Receipt, color: "text-blue-500", trend: "+18%" },
+              { label: "Total Students", value: loadingData ? "..." : studentsList.length.toString(), icon: GraduationCap, color: "text-[#7C3AED]", trend: "+14%" },
+              { label: "Total Teachers", value: loadingData ? "..." : teachersList.length.toString(), icon: BookOpen, color: "text-emerald-500", trend: "+4%" },
+              { label: "Total Parents", value: loadingData ? "..." : parentsList.length.toString(), icon: Users, color: "text-[#7C3AED]", trend: "+12%" },
               { label: "Avg Attendance", value: "96.8%", icon: Calendar, color: "text-amber-500", trend: "+1.2%" },
               { label: "Pending Fees", value: "NPR 1.14M", icon: Receipt, color: "text-rose-500", trend: "-5%" },
               { label: "Active Classes", value: "32", icon: Home, color: "text-teal-500", trend: "Stable" },
@@ -344,70 +443,16 @@ function AdminDashboardContent() {
               </div>
             </div>
           </div>
-
-          {/* Quick Tasks & Recent Activity log */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-4">
-              <h3 className="font-bold text-sm font-outfit">Active Operations Ledger</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
-                      <th className="py-3">Activity</th>
-                      <th className="py-3">Type</th>
-                      <th className="py-3">Status</th>
-                      <th className="py-3">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {[
-                      { act: "Priyanka Sah enrolled in Grade 9", type: "Admissions", status: "Completed", time: "10 mins ago" },
-                      { act: "Satish Kumar requested leave", type: "Faculty", status: "Pending", time: "1 hour ago" },
-                      { act: "NPR 45,000 Tuition payment", type: "Finance", status: "Completed", time: "3 hours ago" },
-                      { act: "Class Schedule update term 2", type: "Schedule", status: "Completed", time: "Yesterday" },
-                    ].map((row, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3.5 font-medium">{row.act}</td>
-                        <td className="py-3.5 text-slate-500">{row.type}</td>
-                        <td className="py-3.5">
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${row.status === "Pending" ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"}`}>
-                            {row.status}
-                          </span>
-                        </td>
-                        <td className="py-3.5 text-slate-400">{row.time}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-4">
-              <h3 className="font-bold text-sm font-outfit">School Announcements</h3>
-              <div className="space-y-3.5">
-                {[
-                  { title: "Mid-Term Examination Schedule", date: "May 25, 2026", desc: "Examinations will commence for Grades 1-10 on upcoming Monday." },
-                  { title: "Parent-Teacher Conference", date: "June 02, 2026", desc: "Mandatory grading matrix reviews with academic faculty advisors." },
-                ].map((item, idx) => (
-                  <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1 hover:border-slate-200 transition-all">
-                    <p className="text-xs font-bold text-slate-800">{item.title}</p>
-                    <p className="text-[9px] text-slate-400 font-medium">{item.date}</p>
-                    <p className="text-[10px] text-slate-500 leading-relaxed mt-1">{item.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         </>
       )}
 
-      {/* 2. Students Tab */}
+      {/* 2. Students Registry Tab */}
       {activeTab === "students" && (
         <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h2 className="text-lg font-bold font-outfit text-slate-800">Students Registry</h2>
-              <p className="text-xs text-slate-400">Total registered academic student records</p>
+              <p className="text-xs text-slate-400">Total registered academic student records in Supabase database</p>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:flex-initial">
@@ -429,40 +474,56 @@ function AdminDashboardContent() {
                 <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
                   <th className="py-3 px-4">Student ID</th>
                   <th className="py-3 px-4">Name</th>
-                  <th className="py-3 px-4">Class</th>
-                  <th className="py-3 px-4">Attendance</th>
-                  <th className="py-3 px-4">Fee Status</th>
-                  <th className="py-3 px-4">Performance</th>
+                  <th className="py-3 px-4">Class Level</th>
+                  <th className="py-3 px-4">Email</th>
+                  <th className="py-3 px-4">Enrollment</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {studentsList.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
-                  <tr key={student.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-bold text-slate-400">{student.id}</td>
-                    <td className="py-3.5 px-4 font-semibold text-[#7C3AED]">{student.name}</td>
-                    <td className="py-3.5 px-4 text-slate-600">{student.class}</td>
-                    <td className="py-3.5 px-4 font-medium text-slate-800">{student.attendance}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                        student.feeStatus === "Paid" ? "bg-emerald-50 text-emerald-600" : 
-                        student.feeStatus === "Pending" ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"
-                      }`}>
-                        {student.feeStatus}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-500">{student.performance}</td>
-                    <td className="py-3.5 px-4 text-right">
-                      <button 
-                        onClick={() => deleteStudent(student.id)}
-                        className="p-1 rounded text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
-                        title="Delete User"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                {loadingData ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-6 text-slate-400 font-semibold">
+                      <Loader2 className="w-4.5 h-4.5 animate-spin mx-auto mb-1 text-indigo-500" /> Loading student database...
                     </td>
                   </tr>
-                ))}
+                ) : studentsList.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-6 text-slate-400">No student profiles provisioned yet.</td>
+                  </tr>
+                ) : (
+                  studentsList.filter(s => s.full_name.toLowerCase().includes(searchQuery.toLowerCase())).map((student) => (
+                    <tr key={student.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-400 truncate max-w-[120px]">{student.id}</td>
+                      <td className="py-3.5 px-4 font-semibold text-[#7C3AED]">{student.full_name}</td>
+                      <td className="py-3.5 px-4 text-slate-600 font-medium">{student.students?.grade_level || "Grade 10"}</td>
+                      <td className="py-3.5 px-4 text-slate-500 font-mono">{student.email}</td>
+                      <td className="py-3.5 px-4">
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                          student.students?.enrollment_status === "active" ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                        }`}>
+                          {student.students?.enrollment_status || "active"}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right flex justify-end gap-1.5">
+                        <button 
+                          onClick={() => handleOpenEditModal(student)}
+                          className="p-1 rounded text-indigo-500 hover:bg-indigo-50 transition-colors cursor-pointer"
+                          title="Modify Record"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteUser(student.id, "student")}
+                          className="p-1 rounded text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete User"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -474,7 +535,7 @@ function AdminDashboardContent() {
         <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm space-y-6">
           <div>
             <h2 className="text-lg font-bold font-outfit text-slate-800">Faculty Directory</h2>
-            <p className="text-xs text-slate-400">Total registered teachers and departments</p>
+            <p className="text-xs text-slate-400">Total registered teachers and specialization fields in database</p>
           </div>
 
           <div className="overflow-x-auto">
@@ -483,37 +544,50 @@ function AdminDashboardContent() {
                 <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
                   <th className="py-3 px-4">Teacher ID</th>
                   <th className="py-3 px-4">Name</th>
-                  <th className="py-3 px-4">Subject</th>
+                  <th className="py-3 px-4">Department</th>
+                  <th className="py-3 px-4">Specialization</th>
                   <th className="py-3 px-4">Email</th>
-                  <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {teachersList.map((teacher) => (
-                  <tr key={teacher.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-bold text-slate-400">{teacher.id}</td>
-                    <td className="py-3.5 px-4 font-semibold text-[#7C3AED]">{teacher.name}</td>
-                    <td className="py-3.5 px-4 text-slate-600">{teacher.subject}</td>
-                    <td className="py-3.5 px-4 text-slate-500">{teacher.email}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                        teacher.status === "Active" ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
-                      }`}>
-                        {teacher.status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <button 
-                        onClick={() => deleteTeacher(teacher.id)}
-                        className="p-1 rounded text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
-                        title="Delete Faculty"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                {loadingData ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-6 text-slate-400 font-semibold">
+                      <Loader2 className="w-4.5 h-4.5 animate-spin mx-auto mb-1 text-indigo-500" /> Loading faculty list...
                     </td>
                   </tr>
-                ))}
+                ) : teachersList.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-6 text-slate-400">No faculty members provisioned yet.</td>
+                  </tr>
+                ) : (
+                  teachersList.map((teacher) => (
+                    <tr key={teacher.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-400 truncate max-w-[120px]">{teacher.id}</td>
+                      <td className="py-3.5 px-4 font-semibold text-[#7C3AED]">{teacher.full_name}</td>
+                      <td className="py-3.5 px-4 text-slate-600 font-medium">{teacher.teachers?.department || "Science Faculty"}</td>
+                      <td className="py-3.5 px-4 text-slate-500 font-medium">{teacher.teachers?.specialization || "General Studies"}</td>
+                      <td className="py-3.5 px-4 text-slate-500 font-mono">{teacher.email}</td>
+                      <td className="py-3.5 px-4 text-right flex justify-end gap-1.5">
+                        <button 
+                          onClick={() => handleOpenEditModal(teacher)}
+                          className="p-1 rounded text-indigo-500 hover:bg-indigo-50 transition-colors cursor-pointer"
+                          title="Modify Record"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteUser(teacher.id, "teacher")}
+                          className="p-1 rounded text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete Faculty"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -525,7 +599,7 @@ function AdminDashboardContent() {
         <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm space-y-6">
           <div>
             <h2 className="text-lg font-bold font-outfit text-slate-800">Parents Registry</h2>
-            <p className="text-xs text-slate-400">Total registered parent & guardian records</p>
+            <p className="text-xs text-slate-400">Total registered parents & guardians connected under child profiles</p>
           </div>
 
           <div className="overflow-x-auto">
@@ -535,30 +609,49 @@ function AdminDashboardContent() {
                   <th className="py-3 px-4">Parent ID</th>
                   <th className="py-3 px-4">Name</th>
                   <th className="py-3 px-4">Email</th>
-                  <th className="py-3 px-4">Phone</th>
-                  <th className="py-3 px-4">Linked Child</th>
+                  <th className="py-3 px-4">Phone Number</th>
+                  <th className="py-3 px-4">Relationship</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {parentsList.map((parent) => (
-                  <tr key={parent.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-bold text-slate-400">{parent.id}</td>
-                    <td className="py-3.5 px-4 font-semibold text-[#7C3AED]">{parent.name}</td>
-                    <td className="py-3.5 px-4 text-slate-500">{parent.email}</td>
-                    <td className="py-3.5 px-4 text-slate-600">{parent.phone}</td>
-                    <td className="py-3.5 px-4 font-medium text-slate-800">{parent.childName}</td>
-                    <td className="py-3.5 px-4 text-right">
-                      <button 
-                        onClick={() => deleteParent(parent.id)}
-                        className="p-1 rounded text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
-                        title="Delete Parent"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                {loadingData ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-6 text-slate-400 font-semibold">
+                      <Loader2 className="w-4.5 h-4.5 animate-spin mx-auto mb-1 text-indigo-500" /> Loading parent registry...
                     </td>
                   </tr>
-                ))}
+                ) : parentsList.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-6 text-slate-400">No parent records provisioned yet.</td>
+                  </tr>
+                ) : (
+                  parentsList.map((parent) => (
+                    <tr key={parent.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-400 truncate max-w-[120px]">{parent.id}</td>
+                      <td className="py-3.5 px-4 font-semibold text-[#7C3AED]">{parent.full_name}</td>
+                      <td className="py-3.5 px-4 text-slate-500 font-mono">{parent.email}</td>
+                      <td className="py-3.5 px-4 text-slate-600 font-semibold">{parent.parents?.phone || "Not provided"}</td>
+                      <td className="py-3.5 px-4 text-slate-500 font-medium">{parent.parents?.relationship || "Guardian"}</td>
+                      <td className="py-3.5 px-4 text-right flex justify-end gap-1.5">
+                        <button 
+                          onClick={() => handleOpenEditModal(parent)}
+                          className="p-1 rounded text-indigo-500 hover:bg-indigo-50 transition-colors cursor-pointer"
+                          title="Modify Record"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteUser(parent.id, "parent")}
+                          className="p-1 rounded text-rose-500 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete Parent"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -667,7 +760,7 @@ function AdminDashboardContent() {
                   Institutional User Role
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {(["student", "teacher", "parent"] as const).map((r) => (
+                  {(["parent", "student", "teacher"] as const).map((r) => (
                     <button
                       key={r}
                       type="button"
@@ -802,17 +895,32 @@ function AdminDashboardContent() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
-                        Parent Guardian Reference
+                        Parent Guardian Link * (Admit after parent account is active)
                       </label>
-                      <select 
-                        value={parentId}
-                        onChange={(e) => setParentId(e.target.value)}
-                        className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
-                      >
-                        <option value="">Unassigned Guardian</option>
-                        <option value="p1">Lakhan Yadav (Guardian of Rahul Dev Yadav)</option>
-                        <option value="p2">Bikash Sah (Guardian of Anish Kumar Sah)</option>
-                      </select>
+                      
+                      {/* Search Parent Helper */}
+                      <div className="space-y-2">
+                        <input 
+                          type="text" 
+                          placeholder="🔍 Search parent name or email..." 
+                          value={parentSearchQuery}
+                          onChange={(e) => setParentSearchQuery(e.target.value)}
+                          className="w-full px-3 py-1.5 text-[10px] rounded-lg border border-slate-200 bg-white focus:outline-none"
+                        />
+                        <select 
+                          required
+                          value={parentId}
+                          onChange={(e) => setParentId(e.target.value)}
+                          className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                        >
+                          <option value="">-- Choose Existing Parent --</option>
+                          {filteredParents.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.full_name} ({p.email})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
                     <div>
@@ -856,22 +964,6 @@ function AdminDashboardContent() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
-                        Linked Student Name / ID
-                      </label>
-                      <select 
-                        value={childId}
-                        onChange={(e) => setChildId(e.target.value)}
-                        className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
-                      >
-                        <option value="">Select Child</option>
-                        <option value="s3">Rahul Dev Yadav (Grade 10-A)</option>
-                        <option value="s1">Anish Kumar Sah (Grade 10-A)</option>
-                        <option value="s2">Rina Jaiswal (Grade 9-B)</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
                         Occupation / Profession
                       </label>
                       <div className="relative">
@@ -885,19 +977,35 @@ function AdminDashboardContent() {
                         />
                       </div>
                     </div>
+
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Mobile Phone Number
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input 
+                          type="text" 
+                          placeholder="e.g. +977 98510xxxxx" 
+                          value={parentPhone}
+                          onChange={(e) => setParentPhone(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
-                      Mobile Phone Number
+                      Residential Address
                     </label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <input 
                         type="text" 
-                        placeholder="e.g. +977 98510xxxxx" 
-                        value={parentPhone}
-                        onChange={(e) => setParentPhone(e.target.value)}
+                        placeholder="e.g. Baneshwor, Kathmandu" 
+                        value={parentAddress}
+                        onChange={(e) => setParentAddress(e.target.value)}
                         className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-[#7C3AED]"
                       />
                     </div>
@@ -937,6 +1045,149 @@ function AdminDashboardContent() {
           </p>
         </div>
       )}
+
+      {/* Edit User Modal Dialog Backdrop */}
+      <AnimatePresence>
+        {editingUser && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white w-full max-w-md rounded-2xl p-6 shadow-xl border border-slate-200 relative"
+            >
+              <button 
+                onClick={() => setEditingUser(null)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-1"
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+
+              <div className="mb-4">
+                <h3 className="text-base font-bold font-outfit text-slate-800">Modify {editingUser.role} Profile</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Edit credentials and table variables below</p>
+              </div>
+
+              <form onSubmit={handleSaveEdits} className="space-y-4">
+                <div>
+                  <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                    Full Name
+                  </label>
+                  <input 
+                    type="text" 
+                    required
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                    Email Address
+                  </label>
+                  <input 
+                    type="email" 
+                    required
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
+                  />
+                </div>
+
+                {editingUser.role === "parent" && (
+                  <div>
+                    <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                      Phone Number
+                    </label>
+                    <input 
+                      type="text" 
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
+                    />
+                  </div>
+                )}
+
+                {editingUser.role === "student" && (
+                  <>
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Class Level
+                      </label>
+                      <input 
+                        type="text" 
+                        value={editExtraField1}
+                        onChange={(e) => setEditExtraField1(e.target.value)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Enrollment Status
+                      </label>
+                      <select 
+                        value={editExtraField2}
+                        onChange={(e) => setEditExtraField2(e.target.value)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
+                      >
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                        <option value="graduated">Graduated</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                {editingUser.role === "teacher" && (
+                  <>
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Department
+                      </label>
+                      <input 
+                        type="text" 
+                        value={editExtraField1}
+                        onChange={(e) => setEditExtraField1(e.target.value)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1 font-mono">
+                        Specialization Subject
+                      </label>
+                      <input 
+                        type="text" 
+                        value={editExtraField2}
+                        onChange={(e) => setEditExtraField2(e.target.value)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="flex gap-2 justify-end pt-2">
+                  <button 
+                    type="button" 
+                    onClick={() => setEditingUser(null)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={updatingUser}
+                    className="px-4 py-2 rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-bold transition-all shadow-md cursor-pointer flex items-center gap-1.5"
+                  >
+                    {updatingUser ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                    Save Modifications
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
