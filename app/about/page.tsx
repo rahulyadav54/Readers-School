@@ -197,29 +197,14 @@ export default function AboutPage() {
         <section className="bg-blue-900 rounded-[40px] p-10 md:p-16 text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-full h-full bg-[url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?q=80&w=2938&auto=format&fit=crop')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
           
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
-            {/* Chairman message */}
-            <div className="space-y-6">
-              <span className="text-xs uppercase tracking-widest text-blue-300 font-bold">Message from the Chairman</span>
-              <p className="text-xl md:text-2xl font-light leading-relaxed italic text-blue-50">
-                "Education is the most powerful catalyst for change. Our goal is to provide a nurturing sanctuary where young minds are empowered to think critically, dream boundlessly, and lead with empathy."
-              </p>
-              <div>
-                <h5 className="font-bold text-lg text-white">Dr. Zaya Hasan</h5>
-                <p className="text-sm text-blue-300">Chairman, The Readers International</p>
-              </div>
-            </div>
-
-            {/* Principal message */}
-            <div className="space-y-6">
-              <span className="text-xs uppercase tracking-widest text-blue-300 font-bold">Academic Direction</span>
-              <p className="text-xl md:text-2xl font-light leading-relaxed italic text-blue-50">
-                "Every child is unique. Our dedicated educators work tirelessly to create personalized learning journeys, ensuring that each student feels supported, challenged, and inspired to reach their full potential."
-              </p>
-              <div>
-                <h5 className="font-bold text-lg text-white">Prof. Elena Rostova</h5>
-                <p className="text-sm text-blue-300">Executive Principal</p>
-              </div>
+          <div className="relative z-10 max-w-3xl mx-auto text-center space-y-8">
+            <span className="text-xs uppercase tracking-widest text-blue-300 font-bold">Message from the Principal</span>
+            <p className="text-xl md:text-3xl font-light leading-relaxed italic text-blue-50">
+              "Education is the most powerful catalyst for change. At The Readers International School, we work tirelessly to create personalized learning journeys, ensuring that each student feels supported, challenged, and inspired to reach their full potential."
+            </p>
+            <div className="pt-4">
+              <h5 className="font-bold text-2xl text-white font-outfit">Digamber Yadav</h5>
+              <p className="text-sm text-blue-300 mt-1">Principal & Head of School</p>
             </div>
           </div>
         </section>
