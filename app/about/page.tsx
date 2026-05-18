@@ -208,19 +208,19 @@ export default function AboutPage() {
                 name: "Sudeep Shrestha", 
                 role: "Co-ordinator", 
                 phone: "+977 9845856547", 
-                image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=400&auto=format&fit=crop" 
+                image: "/management/Sudeep%20Shrestha.png" 
               },
               { 
                 name: "Shambhu Yadav", 
                 role: "Accountant", 
                 phone: "+977 9802933728", 
-                image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop" 
+                image: "/management/Shambhu%20Yadav.png" 
               },
               { 
                 name: "Amrita Thakur", 
                 role: "Receptionist", 
                 phone: "", 
-                image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop" 
+                image: "/management/Amrita%20Thakur.png" 
               }
             ].map((member, idx) => (
               <div key={idx} className="bg-slate-50 rounded-[24px] overflow-hidden border border-slate-100 group hover:-translate-y-2 transition-transform duration-300">
