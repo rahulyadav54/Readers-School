@@ -29,7 +29,7 @@ export default function AdminDashboard() {
   const [provName, setProvName] = useState("");
   const [provEmail, setProvEmail] = useState("");
   const [provPass, setProvPass] = useState("");
-  const [provRole, setProvRole] = useState<"student" | "teacher">("student");
+  const [provRole, setProvRole] = useState<"student" | "teacher" | "parent">("student");
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -420,6 +420,7 @@ export default function AdminDashboard() {
                     >
                       <option value="student">Student 🎓</option>
                       <option value="teacher">Teacher 🧑‍🏫</option>
+                      <option value="parent">Parent 👪</option>
                     </select>
                   </div>
                 </div>

@@ -12,9 +12,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (role !== "student" && role !== "teacher") {
+    if (role !== "student" && role !== "teacher" && role !== "parent") {
       return NextResponse.json(
-        { error: "Administrators can only provision 'student' or 'teacher' profiles." },
+        { error: "Administrators can only provision 'student', 'teacher', or 'parent' profiles." },
         { status: 400 }
       );
     }
