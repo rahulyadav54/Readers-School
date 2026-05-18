@@ -6,13 +6,17 @@ import { Camera } from "lucide-react";
 
 export default function GalleryPage() {
   const images = [
-    { url: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=60&w=800&auto=format&fit=crop", span: "col-span-1 row-span-2" },
-    { url: "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=60&w=800&auto=format&fit=crop", span: "col-span-2 row-span-1" },
-    { url: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=60&w=800&auto=format&fit=crop", span: "col-span-1 row-span-1" },
-    { url: "https://images.unsplash.com/photo-1531482615713-2afd69097998?q=60&w=800&auto=format&fit=crop", span: "col-span-1 row-span-2" },
-    { url: "https://images.unsplash.com/photo-1577896851231-70ef18881754?q=60&w=800&auto=format&fit=crop", span: "col-span-2 row-span-2" },
-    { url: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=60&w=800&auto=format&fit=crop", span: "col-span-1 row-span-1" },
-    { url: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=60&w=800&auto=format&fit=crop", span: "col-span-2 row-span-1" },
+    { url: "/gallary/award.jpg", span: "col-span-1 row-span-2", alt: "Award Ceremony Celebration" },
+    { url: "/gallary/cycle%20race%20game.jpg", span: "col-span-2 row-span-1", alt: "Exciting Student Cycle Race Game" },
+    { url: "/gallary/batch.jpg", span: "col-span-1 row-span-1", alt: "TRIS Students Batch Photo" },
+    { url: "/gallary/bidai%202082.jpg", span: "col-span-1 row-span-2", alt: "Farewell / Bidai Ceremony 2082 B.S." },
+    { url: "/gallary/award2.jpg", span: "col-span-2 row-span-2", alt: "Premium Academic Awards Distribution" },
+    { url: "/gallary/game%20head.jpg", span: "col-span-1 row-span-1", alt: "Sports & Game Ceremony Head" },
+    { url: "/gallary/game%20team.jpg", span: "col-span-2 row-span-1", alt: "TRIS Winning Sports Team" },
+    { url: "/gallary/mam.jpg", span: "col-span-1 row-span-2", alt: "Interactive Faculty & Teacher Session" },
+    { url: "/gallary/red%20house.jpg", span: "col-span-1 row-span-1", alt: "Red House Sports Assembly" },
+    { url: "/gallary/sarswatipuja.jpg", span: "col-span-2 row-span-1", alt: "Sarswati Puja Celebration" },
+    { url: "/gallary/student1.jpg", span: "col-span-1 row-span-1", alt: "Students Creative Activity" }
   ];
 
   return (
@@ -41,7 +45,7 @@ export default function GalleryPage() {
                 <img 
                   src={img.url} 
                   loading="lazy" 
-                  alt={`Gallery Image ${idx + 1}`} 
+                  alt={img.alt} 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100" 
                 />
                 <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-transparent transition-colors duration-500"></div>

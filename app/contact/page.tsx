@@ -31,7 +31,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-900 text-lg">Main Campus</h4>
-                  <p className="text-slate-600">123 Academic Avenue, Knowledge City<br/>Rautahat District, Nepal</p>
+                  <p className="text-slate-600">Garuda-4, Rautahat<br/>Nepal</p>
                 </div>
               </div>
 
@@ -41,7 +41,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-900 text-lg">Phone Numbers</h4>
-                  <p className="text-slate-600">Admissions: +977 123 456 7890<br/>General: +977 123 456 7891</p>
+                  <p className="text-slate-600">Admissions: +977 9802933719<br/>General: 055-590719</p>
                 </div>
               </div>
 
@@ -51,7 +51,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-900 text-lg">Email Addresses</h4>
-                  <p className="text-slate-600">admissions@readersint.edu<br/>info@readersint.edu</p>
+                  <p className="text-slate-600">thereadersschool2073@gmail.com</p>
                 </div>
               </div>
 

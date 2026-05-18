@@ -2,15 +2,15 @@
 
 import PublicHeader from "@/components/layout/PublicHeader";
 import PublicFooter from "@/components/layout/PublicFooter";
-import { Mail, Linkedin } from "lucide-react";
+import { Mail, Globe } from "lucide-react";
 
 export default function StaffPage() {
   const leadership = [
     {
-      name: "Dr. Eleanor Vance",
+      name: "Digamber Yadav",
       role: "Principal & Head of School",
-      bio: "With over 20 years of experience in international education, Dr. Vance leads the school with a vision of academic excellence and emotional intelligence.",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=60&w=600&auto=format&fit=crop"
+      bio: "With over 20 years of experience in educational leadership, Mr. Digamber Yadav leads the school with a vision of academic excellence and holistic student development.",
+      image: "/FOUNDER/Digamber%20Yadav.png"
     },
     {
       name: "Marcus Chen",
@@ -50,7 +50,7 @@ export default function StaffPage() {
       <section className="py-24 px-6 bg-slate-50">
         <div className="max-w-7xl mx-auto space-y-12">
           <h2 className="text-3xl font-bold font-outfit text-slate-900 border-b border-slate-200 pb-4">School Leadership</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {leadership.map((leader, idx) => (
               <div key={idx} className="bg-white rounded-[32px] p-8 md:p-10 shadow-xl shadow-slate-200 border border-slate-100 flex flex-col sm:flex-row gap-8 items-center sm:items-start text-center sm:text-left">
@@ -63,7 +63,7 @@ export default function StaffPage() {
                   <p className="text-slate-600 leading-relaxed">{leader.bio}</p>
                   <div className="flex justify-center sm:justify-start gap-3 pt-2">
                     <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-600 hover:text-white transition-colors"><Mail className="w-4 h-4" /></button>
-                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-600 hover:text-white transition-colors"><Linkedin className="w-4 h-4" /></button>
+                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-600 hover:text-white transition-colors"><Globe className="w-4 h-4" /></button>
                   </div>
                 </div>
               </div>
@@ -72,11 +72,57 @@ export default function StaffPage() {
         </div>
       </section>
 
+      {/* Founder Team Section */}
+      <section className="py-24 px-6 bg-slate-50">
+        <div className="max-w-7xl mx-auto space-y-12">
+          <h2 className="text-3xl font-bold font-outfit text-slate-900 border-b border-slate-200 pb-4">FOUNDERS</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {[
+              { name: "Satish Kumar Jha", role: "HOD Science", phone: "+977 9802933724", image: "/FOUNDER/Satish%20Kumar%20Jha.png" },
+              { name: "Arjun Giree", role: "HOD English", phone: "+977 9802933722", image: "/FOUNDER/Arjun%20Giree.png" },
+              { name: "Anil Kumar Yadav", role: "HOD ECA Department", phone: "+977 9802933721", image: "/FOUNDER/Anil%20Kumar%20Yadav.png" },
+              { name: "Nandu Yadav", role: "Founder", phone: "+977 9851162005", image: "/FOUNDER/Nandu%20Yadav.png" }
+            ].map((founder, idx) => (
+              <div key={idx} className="bg-white rounded-[32px] p-8 md:p-10 shadow-xl shadow-slate-200 border border-slate-100 flex flex-col sm:flex-row gap-8 items-center sm:items-start text-center sm:text-left">
+                <img src={founder.image} loading="lazy" alt={founder.name} className="w-32 h-32 rounded-full object-cover shrink-0 shadow-lg" />
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-2xl font-bold font-outfit text-slate-900">{founder.name}</h3>
+                    <p className="text-indigo-600 font-bold text-sm uppercase tracking-wider mt-1">{founder.role}</p>
+                    {founder.phone && <p className="text-slate-600 font-medium mt-1">{founder.phone}</p>}
+                  </div>
+                  <div className="flex justify-center sm:justify-start gap-3 pt-2">
+                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-600 hover:text-white transition-colors"><Mail className="w-4 h-4" /></button>
+                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-600 hover:text-white transition-colors"><Globe className="w-4 h-4" /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Teachers List Section */}
+      <section className="py-24 px-6 bg-white">
+        <div className="max-w-7xl mx-auto space-y-12">
+          <h2 className="text-3xl font-bold font-outfit text-slate-900 border-b border-slate-200 pb-4">Teachers List</h2>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 list-none">
+            {teachers.map((teacher, idx) => (
+              <li key={idx} className="bg-slate-50 rounded-[24px] p-6 text-center">
+                <p className="font-medium text-slate-900">{teacher.name}</p>
+                <p className="text-indigo-600 text-sm">{teacher.role}</p>
+                <p className="text-slate-600 text-xs">{teacher.subject}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       {/* Teaching Faculty Section */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto space-y-12">
           <h2 className="text-3xl font-bold font-outfit text-slate-900 border-b border-slate-200 pb-4">Teaching Faculty</h2>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {teachers.map((teacher, idx) => (
               <div key={idx} className="group bg-slate-50 rounded-[24px] overflow-hidden border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center pb-8">
@@ -85,7 +131,7 @@ export default function StaffPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-6">
                     <div className="flex gap-3">
                       <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-indigo-600 transition-colors"><Mail className="w-4 h-4" /></button>
-                      <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-indigo-600 transition-colors"><Linkedin className="w-4 h-4" /></button>
+                      <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-indigo-600 transition-colors"><Globe className="w-4 h-4" /></button>
                     </div>
                   </div>
                 </div>

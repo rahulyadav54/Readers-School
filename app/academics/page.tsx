@@ -11,29 +11,29 @@ export default function AcademicsPage() {
       title: "Early Years",
       age: "Ages 3 - 5",
       desc: "Laying the foundation for lifelong learning through play, exploration, and emotional intelligence development.",
-      image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=60&w=1200&auto=format&fit=crop",
+      image: "/gallary/student1.jpg",
       features: ["Play-based learning", "Emotional literacy", "Creative arts"]
     },
     {
       title: "Primary School",
       age: "Ages 6 - 11",
       desc: "A rigorous core curriculum balanced with hands-on projects, fostering curiosity and critical thinking skills.",
-      image: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=60&w=1200&auto=format&fit=crop",
+      image: "/gallary/mam.jpg",
       features: ["Core mathematics", "Language mastery", "Introductory coding"]
     },
     {
       title: "Middle School",
       age: "Ages 12 - 14",
       desc: "Guiding students through early adolescence with complex subjects, debate, and advanced technological integration.",
-      image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=60&w=1200&auto=format&fit=crop",
+      image: "/gallary/red%20house.jpg",
       features: ["Advanced Sciences", "Robotics integration", "Global perspectives"]
     },
     {
-      title: "High School & Prep",
-      age: "Ages 15 - 18",
-      desc: "Intensive university preparation, leadership training, and specialization in STEAM and Humanities.",
-      image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=60&w=1200&auto=format&fit=crop",
-      features: ["University placement", "AP / IB courses", "Leadership roles"]
+      title: "Secondary School (SEE Prep)",
+      age: "Ages 15 - 16 (Grades 9 & 10)",
+      desc: "Comprehensive secondary education focused on academic excellence, leadership development, and robust preparation for the Secondary Education Examination (SEE).",
+      image: "/gallary/award.jpg",
+      features: ["SEE Preparation", "STEAM Specialization", "Leadership & Career Counseling"]
     }
   ];
 
@@ -109,7 +109,7 @@ export default function AcademicsPage() {
         <div className="max-w-7xl mx-auto space-y-24">
           <div className="text-center max-w-3xl mx-auto space-y-6">
             <h2 className="text-4xl md:text-5xl font-extrabold font-outfit text-slate-900">The Learning Journey</h2>
-            <p className="text-xl text-slate-600">Explore our structured pathways from early childhood to university preparation.</p>
+            <p className="text-xl text-slate-600">Explore our structured pathways from early childhood to Secondary School (SEE) preparation.</p>
           </div>
 
           <div className="space-y-24">

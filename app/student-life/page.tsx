@@ -7,10 +7,10 @@ import Link from "next/link";
 
 export default function StudentLifePage() {
   const activities = [
-    { title: "Athletics & Sports", desc: "State-of-the-art facilities for football, basketball, swimming, and more.", icon: Trophy, image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=60&w=800&auto=format&fit=crop" },
-    { title: "Arts & Creativity", desc: "Dedicated studios for painting, sculpture, and digital arts.", icon: Palette, image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=60&w=800&auto=format&fit=crop" },
-    { title: "Music & Drama", desc: "A vibrant performing arts program culminating in seasonal theatrical productions.", icon: Music, image: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=60&w=800&auto=format&fit=crop" },
-    { title: "Community Service", desc: "Instilling a sense of responsibility through local outreach and charity events.", icon: Heart, image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=60&w=800&auto=format&fit=crop" }
+    { title: "Athletics & Sports", desc: "State-of-the-art facilities for football, basketball, swimming, and more.", icon: Trophy, image: "/gallary/cycle%20race%20game.jpg" },
+    { title: "Arts & Creativity", desc: "Dedicated studios for painting, sculpture, and digital arts.", icon: Palette, image: "/gallary/student1.jpg" },
+    { title: "Music & Drama", desc: "A vibrant performing arts program culminating in seasonal theatrical productions.", icon: Music, image: "/gallary/bidai%202082.jpg" },
+    { title: "Community Service", desc: "Instilling a sense of responsibility through local outreach and charity events.", icon: Heart, image: "/gallary/red%20house.jpg" }
   ];
 
   return (
@@ -21,7 +21,7 @@ export default function StudentLifePage() {
       <section className="relative w-full pt-32 pb-24 px-6 bg-slate-900 overflow-hidden">
         <div className="absolute inset-0">
           <img 
-            src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=60&w=1600&auto=format&fit=crop" 
+            src="/COVER/School.jpg" 
             alt="Campus Life" 
             className="w-full h-full object-cover opacity-40"
           />

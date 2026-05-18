@@ -12,8 +12,8 @@ export default function PublicFooter() {
           {/* Brand Info */}
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-600/20">
-                <BookOpen className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-700 shadow-md bg-white">
+                <img src="/logo.jpeg" alt="TRIS Logo" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h2 className="text-xl font-bold font-outfit text-white tracking-tight">The Readers Int.</h2>
@@ -46,15 +46,15 @@ export default function PublicFooter() {
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-                <span>123 Academic Avenue,<br />Rautahat District, Nepal</span>
+                <span>Garuda-4, Rautahat,<br />Nepal</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-blue-500 shrink-0" />
-                <span>+977 123 456 7890</span>
+                <span>+977 9802933719 / 055-590719</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-blue-500 shrink-0" />
-                <span>admissions@readersint.edu</span>
+                <span>thereadersschool2073@gmail.com</span>
               </li>
             </ul>
           </div>

@@ -39,8 +39,8 @@ export default function PublicHeader() {
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Logo Area */}
         <Link href="/" className="flex items-center gap-4 group">
-          <div className="w-12 h-12 rounded-2xl bg-blue-900 text-white flex items-center justify-center transform group-hover:scale-105 group-hover:rotate-3 transition-all duration-300 shadow-lg shadow-blue-900/20">
-            <BookOpen className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 transform group-hover:scale-105 transition-all duration-300 shadow-md bg-white">
+            <img src="/logo.jpeg" alt="TRIS Logo" className="w-full h-full object-cover" />
           </div>
           <div>
             <h1 className="text-xl font-extrabold font-outfit text-slate-900 tracking-tight">

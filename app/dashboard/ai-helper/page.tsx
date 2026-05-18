@@ -275,22 +275,21 @@ export default function AIHomeworkHelperPage() {
       }
 
       // Render line normally, with simple inline code / bold regex formatting
-      let formattedLine = line;
-      // Bold text formatting
-      formattedLine = formattedLine.replace(/\*\*(.*?)\*\*/g, "$1");
-      // Inline math formatting
-      formattedLine = formattedLine.replace(/\$(.*?)\$/g, "$1");
-      // Inline code formatting
-      formattedLine = formattedLine.replace(/`(.*?)`/g, "$1");
+      const formattedLine = line
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-indigo-300">$1</strong>')
+        .replace(/\$(.*?)\$/g, '<span class="px-1 py-0.5 bg-indigo-500/10 rounded font-mono">$1</span>')
+        .replace(/`(.*?)`/g, '<code class="px-1 py-0.5 bg-foreground/5 rounded font-mono text-[10px]">$1</code>');
 
       if (line.trim() === "") {
         return <div key={idx} className="h-2" />;
       }
 
       return (
-        <p key={idx} className="text-xs text-foreground/80 leading-relaxed my-1.5 font-sans">
-          {formattedLine}
-        </p>
+        <p 
+          key={idx} 
+          className="text-xs text-foreground/80 leading-relaxed my-1.5 font-sans"
+          dangerouslySetInnerHTML={{ __html: formattedLine }}
+        />
       );
     });
   };

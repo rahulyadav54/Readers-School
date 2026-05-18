@@ -20,7 +20,7 @@ export default function AdmissionsPage() {
       {/* Hero Section */}
       <section className="relative w-full pt-32 pb-24 px-6 bg-white overflow-hidden border-b border-slate-100">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-50 rounded-full blur-[100px] opacity-60 -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        
+
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 relative z-10">
           <div className="w-full lg:w-1/2 space-y-6">
             <span className="inline-flex px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-700 font-bold uppercase tracking-wider text-xs">Admissions 2026-27</span>
@@ -37,9 +37,9 @@ export default function AdmissionsPage() {
             </div>
           </div>
           <div className="w-full lg:w-1/2 relative">
-            <img 
-              src="https://images.unsplash.com/photo-1577896851231-70ef18881754?q=60&w=1200&auto=format&fit=crop" 
-              alt="Happy students" 
+            <img
+              src="/gallary/batch.jpg"
+              alt="The Readers International School Students Batch"
               className="w-full rounded-[40px] shadow-2xl object-cover h-[500px]"
             />
           </div>

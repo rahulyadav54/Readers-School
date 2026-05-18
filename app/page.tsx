@@ -24,16 +24,16 @@ export default function Home() {
   ];
 
   const campusLifeImages = [
-    "https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=800&auto=format&fit=crop"
+    "/gallary/red%20house.jpg",
+    "/gallary/game%20team.jpg",
+    "/gallary/batch.jpg",
+    "/gallary/cycle%20race%20game.jpg"
   ];
 
   const events = [
-    { title: "Annual Science Fair", date: "Oct 15, 2026", location: "Main Campus Hall", image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=800&auto=format&fit=crop" },
-    { title: "Global Cultural Fest", date: "Nov 02, 2026", location: "Open Amphitheater", image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=800&auto=format&fit=crop" },
-    { title: "Tech & Robotics Expo", date: "Dec 10, 2026", location: "Innovation Lab", image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=800&auto=format&fit=crop" }
+    { title: "Annual Science Fair", date: "Oct 15, 2026", location: "Main Campus Hall", image: "/gallary/award2.jpg" },
+    { title: "Global Cultural Fest", date: "Nov 02, 2026", location: "Open Amphitheater", image: "/gallary/sarswatipuja.jpg" },
+    { title: "Tech & Robotics Expo", date: "Dec 10, 2026", location: "Innovation Lab", image: "/gallary/student1.jpg" }
   ];
 
   const testimonials = [
@@ -107,35 +107,46 @@ export default function Home() {
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             className="w-full lg:w-[45%] relative"
           >
-            <div className="relative rounded-[40px] overflow-hidden shadow-2xl shadow-blue-900/10 aspect-[4/5] lg:aspect-auto lg:h-[600px]">
-              <div className="absolute inset-0 bg-blue-900/10 z-10 mix-blend-overlay"></div>
+            <div className="relative rounded-full overflow-hidden shadow-2xl shadow-blue-900/10 aspect-square w-full max-w-[500px] mx-auto">
+              <div className="absolute inset-0 bg-blue-900/5 z-10 mix-blend-overlay"></div>
               <img 
-                src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=60&w=1200&auto=format&fit=crop" 
-                alt="Students" 
+                src="/logo.jpeg" 
+                alt="TRIS Logo" 
                 className="w-full h-full object-cover"
-                priority="true"
+                fetchPriority="high"
               />
             </div>
 
-            {/* Floating Card 1 */}
-            <div className="absolute top-10 -left-12 bg-white p-4 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-4 animate-float hidden md:flex">
+            {/* Floating Card 1: Excellence */}
+            <div className="absolute top-10 -left-8 md:-left-16 lg:-left-12 bg-white p-4 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-4 animate-float hidden sm:flex">
               <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-                <BrainCircuit className="w-6 h-6" />
+                <Trophy className="w-6 h-6" />
               </div>
               <div>
-                <p className="font-bold text-slate-900">AI Smart Learning</p>
-                <p className="text-xs text-slate-500">Future-ready campus</p>
+                <p className="font-bold text-slate-900">Academic Excellence</p>
+                <p className="text-xs text-slate-500">Best education for all</p>
               </div>
             </div>
 
-            {/* Floating Card 2 */}
-            <div className="absolute bottom-20 -right-8 bg-white p-4 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-4 animate-float hidden md:flex" style={{ animationDelay: '1.5s' }}>
+            {/* Floating Card 2: Holistic */}
+            <div className="absolute bottom-24 -right-4 md:-right-12 lg:-right-8 bg-white p-4 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-4 animate-float hidden sm:flex" style={{ animationDelay: '1.5s' }}>
               <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
-                <Code className="w-6 h-6" />
+                <Star className="w-6 h-6" />
               </div>
               <div>
-                <p className="font-bold text-slate-900">Coding Programs</p>
-                <p className="text-xs text-slate-500">From Grade 1 onwards</p>
+                <p className="font-bold text-slate-900">Holistic Growth</p>
+                <p className="text-xs text-slate-500">Mind, body & personality</p>
+              </div>
+            </div>
+
+            {/* Floating Card 3: Global */}
+            <div className="absolute top-1/2 -translate-y-1/2 -right-4 md:-right-16 lg:-right-12 bg-white p-4 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-4 animate-float hidden lg:flex" style={{ animationDelay: '0.7s' }}>
+              <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <Globe className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-900">Global Citizens</p>
+                <p className="text-xs text-slate-500">Empowering leaders</p>
               </div>
             </div>
           </motion.div>
@@ -160,6 +171,29 @@ export default function Home() {
           })}
         </div>
       </section>
+      {/* 2.5 HERITAGE SECTION */}
+      <section className="py-24 px-6 bg-slate-50 border-b border-slate-100">
+        <div className="max-w-6xl mx-auto text-center space-y-12">
+          <div className="space-y-8 max-w-5xl mx-auto">
+            <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full"></div>
+            <h2 className="text-3xl md:text-5xl font-extrabold font-outfit text-slate-900 leading-tight">
+              The Readers International School
+            </h2>
+            <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-4xl mx-auto font-medium">
+              Since its establishment in <span className="font-bold text-blue-700">2073 B.S. (2016 A.D)</span>, TRIS has secured a formidable place among scholars and guardians with its dedication to the highest educational standards. TRIS is fully engaged in the communities in which it is located through unique academic approaches and various social responsibilities.
+            </p>
+          </div>
+          
+          <div className="relative rounded-[24px] overflow-hidden shadow-xl border border-slate-100 bg-white p-2 max-w-4xl mx-auto w-full">
+             <img 
+               src="/COVER/School.jpg" 
+               alt="TRIS Students Group Photo" 
+               className="w-full h-auto block rounded-[16px]"
+             />
+          </div>
+        </div>
+      </section>
+
 
       {/* 3. WHY CHOOSE US */}
       <section className="py-24 px-6 bg-white">
@@ -222,8 +256,8 @@ export default function Home() {
           
           <div className="w-full lg:w-1/2 relative">
             <img 
-              src="https://images.unsplash.com/photo-1531482615713-2afd69097998?q=60&w=1200&auto=format&fit=crop" 
-              alt="Smart Learning" 
+              src="/gallary/mam.jpg" 
+              alt="Smart Learning Session at TRIS" 
               loading="lazy"
               className="w-full rounded-[32px] shadow-2xl shadow-black/50"
             />

@@ -11,7 +11,7 @@ export default function EventsPage() {
       date: "October 15, 2026",
       time: "09:00 AM - 04:00 PM",
       location: "Main Campus Exhibition Hall",
-      image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=60&w=800&auto=format&fit=crop",
+      image: "/gallary/award2.jpg",
       desc: "Join us as our students present groundbreaking robotics, AI, and environmental science projects.",
       featured: true
     },
@@ -20,8 +20,8 @@ export default function EventsPage() {
       date: "November 02, 2026",
       time: "10:00 AM - 06:00 PM",
       location: "Open Amphitheater",
-      image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=60&w=800&auto=format&fit=crop",
-      desc: "A vibrant celebration of the 45+ nationalities represented at our school through food, music, and art.",
+      image: "/gallary/sarswatipuja.jpg",
+      desc: "A vibrant celebration of cultural harmony represented at our school through food, music, and art.",
       featured: false
     },
     {
@@ -29,7 +29,7 @@ export default function EventsPage() {
       date: "December 10, 2026",
       time: "11:00 AM - 03:00 PM",
       location: "Innovation Lab",
-      image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=60&w=800&auto=format&fit=crop",
+      image: "/gallary/student1.jpg",
       desc: "Interactive demonstrations of student-built autonomous robots and coding projects.",
       featured: false
     },
@@ -38,7 +38,7 @@ export default function EventsPage() {
       date: "December 18, 2026",
       time: "06:00 PM - 08:30 PM",
       location: "Grand Auditorium",
-      image: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=60&w=800&auto=format&fit=crop",
+      image: "/gallary/bidai%202082.jpg",
       desc: "An enchanting evening of classical and contemporary music performed by the student orchestra.",
       featured: false
     }

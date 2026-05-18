@@ -3,7 +3,7 @@
 import PublicHeader from "@/components/layout/PublicHeader";
 import PublicFooter from "@/components/layout/PublicFooter";
 import { motion } from "framer-motion";
-import { ShieldCheck, Heart, Globe, BookOpen, Star, Sparkles } from "lucide-react";
+import { ShieldCheck, Heart, Globe, BookOpen, Star, Sparkles, Mail } from "lucide-react";
 
 export default function AboutPage() {
   const values = [
@@ -32,9 +32,9 @@ export default function AboutPage() {
           </div>
           <div className="w-full lg:w-1/2 relative">
             <img 
-              src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=60&w=1200&auto=format&fit=crop" 
-              alt="Students walking on campus" 
-              priority="true"
+              src="/gallary/award.jpg" 
+              alt="Awards Ceremony at TRIS" 
+              fetchPriority="high"
               className="w-full rounded-[32px] shadow-2xl object-cover h-[400px]"
             />
           </div>
@@ -43,41 +43,68 @@ export default function AboutPage() {
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-24 space-y-32">
         
-        {/* Story Section */}
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-          <div className="order-2 md:order-1 relative">
-             <img 
-              src="https://images.unsplash.com/photo-1577896851231-70ef18881754?q=60&w=1200&auto=format&fit=crop" 
-              alt="Happy students collaborating" 
-              loading="lazy"
-              className="w-full rounded-[32px] shadow-xl object-cover h-[500px]"
-            />
-            <div className="absolute -bottom-8 -right-8 premium-card p-6 bg-white w-64 hidden md:block">
-              <div className="flex items-center gap-3 mb-2">
-                <Star className="w-6 h-6 fill-amber-400 text-amber-400" />
-                <h4 className="font-bold text-slate-900">Our Mission</h4>
+        {/* Mission & Vision Section */}
+        <section className="space-y-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            
+            {/* Mission Text */}
+            <div className="space-y-8 order-2 lg:order-1">
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-blue-50 text-blue-700 font-bold uppercase tracking-wider text-sm border border-blue-100">
+                <Star className="w-5 h-5" /> Our Mission
               </div>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                To ignite a lifelong love of learning and empower students to become compassionate global citizens.
-              </p>
+              <h3 className="text-3xl md:text-4xl font-extrabold font-outfit text-slate-900 leading-tight">
+                Nurturing Hidden Talents to Fruition
+              </h3>
+              <div className="space-y-6 text-lg text-slate-600 leading-relaxed">
+                <p>
+                  TRIS is a unique and noble academic institution dedicated to providing a healthy environment with a students' friendly atmosphere. Our mission is to provide the best academic environment with all the modern teaching and learning facilities which is required to nurture students' hidden talents and bring them to fruition through constant guidance and supervision. Discipline, constructivism, and studiousness with integrated personality development is what we nurture in our students.
+                </p>
+                <p>
+                  We have a motive to establish TRIS as a multidisciplinary educational network and develop it as a center for excellence. For Readerians, the sky is not the limit; we would love to see this institution turning out to be a university in the decades to come.
+                </p>
+                <p>
+                  With the exponential expenses in the field of private schools of Nepal, TRIS will always advocate the slogan of best education for all. We are also working hard to ensure the possibility of best education at this place and trying hard to reduce the migration of people to the capital city in the pursuit of best academic facilities.
+                </p>
+                <p>
+                  Thus, intellectually and morally equipped students graduating out of TRIS will be in an enviable position to take any challenges, be it the pursuit of higher studies abroad or the career goals that life might throw up.
+                </p>
+              </div>
             </div>
-          </div>
-          
-          <div className="order-1 md:order-2 space-y-8">
-            <h3 className="text-3xl font-extrabold font-outfit text-slate-900">
-              Our Journey
-            </h3>
-            <div className="space-y-6 text-base text-slate-600 leading-relaxed">
-              <p>
-                Founded on the belief that education should be holistic and deeply engaging, **The Readers International School** was established to provide a nurturing environment where children can truly thrive.
-              </p>
-              <p>
-                Over the years, we have evolved into a premier international institution, seamlessly blending time-honored educational values with modern teaching methodologies. Our beautifully designed campus and dedicated faculty ensure that every student receives personalized attention and the space to grow academically, socially, and emotionally.
-              </p>
-              <p>
-                We believe that learning is a joyful adventure. Whether in our vibrant classrooms, on the sports field, or through our extensive arts programs, we are committed to helping every child discover their unique brilliance.
-              </p>
+
+            {/* Vision Image & Card */}
+            <div className="space-y-8 order-1 lg:order-2">
+              <div className="relative">
+                <img 
+                  src="/gallary/red%20house.jpg" 
+                  alt="Students at TRIS Assembly" 
+                  loading="lazy"
+                  className="w-full rounded-[32px] shadow-2xl object-cover h-[500px]"
+                />
+                
+                {/* Desktop Vision Card */}
+                <div className="absolute bottom-8 -left-8 xl:-left-16 premium-card p-8 bg-white max-w-sm rounded-3xl shadow-2xl border border-slate-100 hidden sm:block">
+                  <div className="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 font-bold uppercase tracking-wider text-xs border border-amber-100 mb-4">
+                    <Sparkles className="w-4 h-4" /> Our Vision
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-xl font-outfit mb-3">Empowering Leaders</h4>
+                  <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                    The vision of The Readers International School is to foster a nurturing and dynamic learning environment where students are empowered to become critical thinkers, compassionate leaders, and lifelong learners. Through innovative teaching methods and a commitment to holistic development, the school aims to inspire each student to achieve academic excellence while embracing global citizenship and ethical responsibility.
+                  </p>
+                </div>
+              </div>
+
+              {/* Mobile Vision Card (shows only on very small screens where absolute positioning breaks) */}
+              <div className="block sm:hidden bg-amber-50 p-6 rounded-3xl border border-amber-100 shadow-lg">
+                  <div className="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-white text-amber-700 font-bold uppercase tracking-wider text-xs border border-amber-200 mb-4">
+                    <Sparkles className="w-4 h-4" /> Our Vision
+                  </div>
+                  <h4 className="font-bold text-amber-900 text-xl font-outfit mb-3">Empowering Leaders</h4>
+                  <p className="text-sm text-amber-800 leading-relaxed font-medium">
+                    The vision of The Readers International School is to foster a nurturing and dynamic learning environment where students are empowered to become critical thinkers, compassionate leaders, and lifelong learners. Through innovative teaching methods and a commitment to holistic development, the school aims to inspire each student to achieve academic excellence while embracing global citizenship and ethical responsibility.
+                  </p>
+              </div>
             </div>
+
           </div>
         </section>
 
@@ -103,6 +130,66 @@ export default function AboutPage() {
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        {/* Leadership & Team */}
+        <section className="space-y-12">
+          <div className="text-center space-y-4 max-w-2xl mx-auto">
+            <h3 className="text-3xl font-extrabold font-outfit text-slate-900">Our Leadership & Team</h3>
+            <p className="text-slate-600 text-lg">
+              Meet the dedicated professionals who guide our vision and support our students every day.
+            </p>
+          </div>
+
+          {/* Principal */}
+          <div className="bg-white rounded-[40px] shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100 flex flex-col md:flex-row mb-12">
+            <div className="w-full md:w-2/5">
+              <img 
+                src="/FOUNDER/Digamber%20Yadav.png" 
+                alt="Digamber Yadav" 
+                loading="lazy"
+                className="w-full h-full object-cover min-h-[300px]"
+              />
+            </div>
+            <div className="w-full md:w-3/5 p-10 lg:p-16 flex flex-col justify-center space-y-4">
+              <span className="text-blue-600 font-bold uppercase tracking-wider text-sm">Principal & Head of School</span>
+              <h4 className="text-3xl font-extrabold font-outfit text-slate-900">Digamber Yadav</h4>
+              <p className="text-slate-600 leading-relaxed text-lg">
+                With over two decades of global educational leadership, Mr. Digamber Yadav believes in cultivating an environment where academic rigor meets profound emotional intelligence. His vision drives the innovative curriculum and student-centric programs at The Readers International School.
+              </p>
+              <div className="flex items-center gap-3 pt-4">
+                <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-blue-600 hover:text-white transition-colors"><Mail className="w-4 h-4" /></button>
+                <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-blue-600 hover:text-white transition-colors"><Globe className="w-4 h-4" /></button>
+              </div>
+            </div>
+          </div>
+
+          {/* Team of 4 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { name: "Satish Kumar Jha", role: "HOD Science", phone: "+977 9802933724", image: "/FOUNDER/Satish%20Kumar%20Jha.png" },
+              { name: "Arjun Giree", role: "HOD English", phone: "+977 9802933722", image: "/FOUNDER/Arjun%20Giree.png" },
+              { name: "Anil Kumar Yadav", role: "HOD ECA Department", phone: "+977 9802933721", image: "/FOUNDER/Anil%20Kumar%20Yadav.png" },
+              { name: "Nandu Yadav", role: "Founder", phone: "+977 9851162005", image: "/FOUNDER/Nandu%20Yadav.png" }
+            ].map((member, idx) => (
+              <div key={idx} className="bg-slate-50 rounded-[24px] overflow-hidden border border-slate-100 group hover:-translate-y-2 transition-transform duration-300">
+                <div className="h-64 overflow-hidden">
+                  <img src={member.image} alt={member.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                </div>
+                <div className="p-6 text-center space-y-4">
+                  <div>
+                    <h5 className="font-bold text-lg font-outfit text-slate-900">{member.name}</h5>
+                    <p className="text-blue-600 font-medium text-sm mt-1 uppercase tracking-wider">{member.role}</p>
+                    {member.phone && <p className="text-slate-600 font-medium mt-1 text-sm">{member.phone}</p>}
+                  </div>
+                  <div className="flex justify-center gap-3 pt-2">
+                    <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-blue-600 hover:text-white transition-colors"><Mail className="w-3 h-3" /></button>
+                    <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-blue-600 hover:text-white transition-colors"><Globe className="w-3 h-3" /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
