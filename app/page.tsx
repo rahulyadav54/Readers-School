@@ -41,19 +41,19 @@ export default function Home() {
       text: "The Readers International School completely transformed our daughter's confidence. The teachers truly care about her emotional and academic growth.",
       author: "Rubi Jaiswal",
       role: "Parent of Grade 8 Student",
-      avatar: "https://i.pravatar.cc/150?u=rubi"
+      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop"
     },
     {
       text: "I've never seen a school so dedicated to holistic development. The campus facilities are world-class, and the community is incredibly welcoming.",
       author: "Ram Lakhan Yadav",
       role: "Parent of Grade 5 Student",
-      avatar: "https://i.pravatar.cc/150?u=ram"
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop"
     },
     {
       text: "The diverse international community here prepares students for the real world. My son is thriving and excited to go to school every day.",
       author: "Pratima Sah",
       role: "Parent of Grade 10 Student",
-      avatar: "https://i.pravatar.cc/150?u=pratima"
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop"
     }
   ];
 
