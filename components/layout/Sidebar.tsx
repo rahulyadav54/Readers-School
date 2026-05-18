@@ -22,6 +22,11 @@ export default function Sidebar() {
       icon: LayoutDashboard,
     },
     {
+      name: "Admin ERP Dashboard",
+      path: "/dashboard/admin",
+      icon: ShieldCheck,
+    },
+    {
       name: "Attendance Terminal",
       path: "/dashboard/attendance",
       icon: Calendar,

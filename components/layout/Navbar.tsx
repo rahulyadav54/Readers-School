@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Sun, Moon, Bell, Search, Menu, LogOut, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -37,9 +38,15 @@ export default function Navbar() {
         {/* Dynamic Greeting */}
         <div className="hidden sm:block">
           <h2 className="text-xs uppercase font-semibold tracking-widest text-foreground/50">Academy System</h2>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <span className="text-sm font-bold font-outfit text-foreground/90">Cadet: {userName}</span>
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse animate-float" />
+            <Link 
+              href="/dashboard/admin" 
+              className="ml-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-600/10 hover:bg-violet-600/20 text-[#7C3AED] dark:text-violet-400 border border-violet-500/25 text-[10px] font-extrabold uppercase tracking-wider transition-all"
+            >
+              <span>Admin ERP</span>
+            </Link>
           </div>
         </div>
       </div>
