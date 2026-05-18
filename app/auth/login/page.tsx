@@ -90,7 +90,7 @@ function LoginForm() {
         router.refresh();
 
         // Redirect to the appropriate portal dashboard automatically
-        const targetPath = `/dashboard/${activePortal}`;
+        const targetPath = `/${activePortal}-dashboard`;
         router.push(targetPath);
       } else {
         throw new Error("Could not initialize session. Check your credentials.");

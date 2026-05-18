@@ -34,20 +34,28 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // IMPORTANT: Avoid writing session logic or calling getUser() on static resources.
-  // This refreshes the session cookie for the user.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
 
-  // 1. Auth Protection: Redirect unauthenticated users trying to access dashboard
-  if (pathname.startsWith("/dashboard")) {
+  // List of primary dashboard paths
+  const dashboardRoutes = [
+    "/admin-dashboard",
+    "/student-dashboard",
+    "/teacher-dashboard",
+    "/parent-dashboard",
+    "/dashboard"
+  ];
+
+  const isAccessingDashboard = dashboardRoutes.some(route => pathname.startsWith(route));
+
+  // 1. Auth Protection: Redirect unauthenticated users trying to access dashboards
+  if (isAccessingDashboard) {
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = "/auth/login";
-      // Keep target path to redirect back after successful login
       url.searchParams.set("redirectTo", pathname);
       return NextResponse.redirect(url);
     }
@@ -61,27 +69,41 @@ export async function updateSession(request: NextRequest) {
 
     const role = profile?.role || user.user_metadata?.role || "student";
 
-    // 2. Base Dashboard Redirect: Redirect /dashboard to specific role dashboard
+    // 2. Base Redirect: Redirect old '/dashboard' to new dynamic role-dashboard
     if (pathname === "/dashboard" || pathname === "/dashboard/") {
       const url = request.nextUrl.clone();
-      url.pathname = `/dashboard/${role}`;
+      url.pathname = `/${role}-dashboard`;
       return NextResponse.redirect(url);
     }
 
-    // 3. Strict Role Guard: Redirect non-admins if they try to access another role's portal
-    const targetRoles = ["student", "teacher", "parent", "admin"];
-    const matchedTarget = targetRoles.find((r) => pathname.startsWith(`/dashboard/${r}`));
-
-    if (matchedTarget && role !== "admin" && role !== matchedTarget) {
+    // 3. Strict Role-Based Route Guards:
+    if (pathname.startsWith("/admin-dashboard") && role !== "admin") {
       const url = request.nextUrl.clone();
-      url.pathname = `/dashboard/${role}`; // Force back to their own dashboard
+      url.pathname = `/${role}-dashboard`;
+      return NextResponse.redirect(url);
+    }
+
+    if (pathname.startsWith("/teacher-dashboard") && !["teacher", "admin"].includes(role)) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/${role}-dashboard`;
+      return NextResponse.redirect(url);
+    }
+
+    if (pathname.startsWith("/parent-dashboard") && !["parent", "admin"].includes(role)) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/${role}-dashboard`;
+      return NextResponse.redirect(url);
+    }
+
+    if (pathname.startsWith("/student-dashboard") && !["student", "admin"].includes(role)) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/${role}-dashboard`;
       return NextResponse.redirect(url);
     }
   }
 
-  // 4. Guest Redirect: Redirect authenticated users away from auth pages (login/signup/forgot-password)
+  // 4. Guest Redirect: Redirect authenticated users away from auth pages (login/signup)
   if (pathname.startsWith("/auth") && user) {
-    // Fetch the role directly from public.profiles for guest redirection as well
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
@@ -90,7 +112,7 @@ export async function updateSession(request: NextRequest) {
 
     const role = profile?.role || user.user_metadata?.role || "student";
     const url = request.nextUrl.clone();
-    url.pathname = `/dashboard/${role}`;
+    url.pathname = `/${role}-dashboard`;
     return NextResponse.redirect(url);
   }
 
