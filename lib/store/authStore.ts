@@ -116,14 +116,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
-      set({ user: null, session: null, profile: null });
+    } catch (error) {
+      console.error("Sign out error caught (self-healing):", error);
+    } finally {
+      // Always wipe local auth state and redirect, ensuring foolproof logout
+      set({ user: null, session: null, profile: null, isLoading: false });
       if (typeof window !== "undefined") {
         window.location.href = "/auth/login";
       }
-    } catch (error) {
-      console.error("Sign out error:", error);
-    } finally {
-      set({ isLoading: false });
     }
   },
 }));
